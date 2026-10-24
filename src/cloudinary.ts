@@ -77,7 +77,7 @@ export async function fetchAllCloudinaryKits(tags?: string[]): Promise<
 > {
   if (!CLOUDINARY_CLOUD_NAME) return [];
   const base = CLOUDINARY_TAG.includes(",")
-    ? CLOUDINARY_TAG.split(",").map((t) => t.trim()).filter(Boolean)
+    ? CLOUDINARY_TAG.split(",").map((t: string) => t.trim()).filter(Boolean)
     : [CLOUDINARY_TAG];
   const list = tags && tags.length
     ? tags
