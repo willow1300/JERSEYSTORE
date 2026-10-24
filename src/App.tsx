@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Jerseys from './Jerseys'
 import Retro from './Retro'
 import ArchivePage from './ArchivePage'
@@ -194,6 +194,30 @@ export default function App() {
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [cartItems, setCartItems] = useState<{name:string;size:string;qty:number;delivery:string;image?:string;price?:number}[]>([])
   const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  // Browser history support so the back button works between pages.
+  const isPopRef = useRef(false)
+  const prevRef = useRef({ page: 'landing', leagueId: null as string | null, teamId: null as string | null })
+  useEffect(() => {
+    const onPop = (e: PopStateEvent) => {
+      const st = (e.state as any) || { page: 'landing', leagueId: null, teamId: null }
+      isPopRef.current = true
+      setPage(st.page || 'landing')
+      setLeagueId(st.leagueId || null)
+      setTeamId(st.teamId || null)
+    }
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+  useEffect(() => {
+    if (isPopRef.current) { isPopRef.current = false; return }
+    const prev = prevRef.current
+    if (prev.page === page && prev.leagueId === leagueId && prev.teamId === teamId) return
+    prevRef.current = { page, leagueId, teamId }
+    // don't push the very first render
+    if (prev.page === 'landing' && prev.leagueId === null && prev.teamId === null && page === 'landing' && leagueId === null && teamId === null) return
+    window.history.pushState({ page, leagueId, teamId }, '', '')
+  }, [page, leagueId, teamId])
 
   const openLeague = (id: string) => {
     setLeagueId(id)

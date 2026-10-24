@@ -72,7 +72,7 @@ const css = `
 .cp-fixed { flex: 0 0 auto; position: relative; z-index: 5; }
 .cp-fixed .topbar { position: relative !important; }
 .cp-head {
-  display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
   padding: 18px 40px 22px; color: #fff;
 }
 .cp-head span { font-size: 11px; letter-spacing: .12em; opacity: .75; }
