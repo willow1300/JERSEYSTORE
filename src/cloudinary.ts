@@ -76,9 +76,12 @@ export async function fetchAllCloudinaryKits(tags?: string[]): Promise<
   { id: string; name: string; image: string; price: number; inStock: boolean; retro: boolean }[]
 > {
   if (!CLOUDINARY_CLOUD_NAME) return [];
+  const base = CLOUDINARY_TAG.includes(",")
+    ? CLOUDINARY_TAG.split(",").map((t) => t.trim()).filter(Boolean)
+    : [CLOUDINARY_TAG];
   const list = tags && tags.length
     ? tags
-    : [CLOUDINARY_TAG, "NewSeason2627", "retro"];
+    : Array.from(new Set([...base, "NewSeason2627", "retro"]));
   const uniq = Array.from(new Set(list));
   const results = await Promise.allSettled(uniq.map((t) => fetchCloudinaryKits(t)));
   const byId = new Map<string, { id: string; name: string; image: string; price: number; inStock: boolean; retro: boolean }>();
