@@ -78,7 +78,7 @@ const css = `
   column-gap: 24px; align-items: start;
   padding: 18px 40px 22px; color: #fff;
 }
-.cp-head .cp-label { grid-area: label; font-size: 11px; letter-spacing: .12em; opacity: .75; }
+.cp-head .cp-label { grid-area: label; font-size: 14px; font-weight: 700; letter-spacing: .12em; opacity: .75; }
 .cp-head h2 { grid-area: title; margin: 4px 0 0; font-size: clamp(32px, 5vw, 56px); line-height: .95; font-weight: 400; }
 .cp-head .cp-data { grid-area: data; font-size: 10px; line-height: 1.7; letter-spacing: .08em; opacity: .7; }
 .cp-head button {
@@ -244,7 +244,7 @@ export default function CartPage(props: CartPageProps) {
         <h2>CART</h2>
         <div className="cp-data">
           [ {cartCount} ITEMS ]<br />
-          [ KES{cartItems[0]?.price ?? 85} / ITEM ]<br />
+          [ ${cartItems[0]?.price ?? 85} / ITEM ]<br />
           [ 72H HOLD ]
         </div>
       </div>
@@ -272,7 +272,7 @@ export default function CartPage(props: CartPageProps) {
                   <div className="cp-row-body">
                     <div className="cp-row-name">{item.name}</div>
                     <div className="cp-row-meta">Size {item.size} · Qty {item.qty} · {item.delivery === "delivery" ? "Delivery" : "Pick up"}</div>
-                    <div className="cp-row-price">KES{(item.qty * (item.price ?? 85)).toFixed(2)}</div>
+                    <div className="cp-row-price">${(item.qty * (item.price ?? 85)).toFixed(2)}</div>
                   </div>
                   <button className="cp-row-remove" onClick={(e) => { e.stopPropagation(); removeItem(i); }} aria-label="Remove">×</button>
                 </div>
@@ -289,7 +289,7 @@ export default function CartPage(props: CartPageProps) {
                   <div className="cp-panel-meta">Size {selectedItem.size} · Qty {selectedItem.qty} · {selectedItem.delivery === "delivery" ? "Delivery" : "Pick up"}</div>
                   <div className="cp-panel-total">
                     <span>TOTAL</span>
-                    <b>KES{total.toFixed(2)}</b>
+                    <b>${total.toFixed(2)}</b>
                   </div>
                   {!userEmail && (
                     <div className="cp-email">
@@ -301,7 +301,7 @@ export default function CartPage(props: CartPageProps) {
                     <p style={{ fontSize: 10, opacity: .7, marginTop: 10, letterSpacing: ".06em" }}>Saved to {userEmail} · expires in 72h</p>
                   )}
                   <div className="cp-actions">
-                    <button className="cp-buy" onClick={buy}>BUY NOW — KES{total.toFixed(2)}</button>
+                    <button className="cp-buy" onClick={buy}>BUY NOW — ${total.toFixed(2)}</button>
                     <button className="cp-chat" onClick={() => setChatOpen(true)}>
                       <Icon name="chat" size={14} /> CHAT WITH US
                     </button>
