@@ -72,17 +72,20 @@ const css = `
 .cp-fixed { flex: 0 0 auto; position: relative; z-index: 5; }
 .cp-fixed .topbar { position: relative !important; }
 .cp-head {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  grid-template-areas: "label data button" "title data button";
+  column-gap: 24px; align-items: start;
   padding: 18px 40px 22px; color: #fff;
 }
-.cp-head span { font-size: 11px; letter-spacing: .12em; opacity: .75; }
-.cp-head h2 { margin: 4px 0 0; font-size: clamp(32px, 5vw, 56px); line-height: .95; font-weight: 400; }
-.cp-head .cp-data { font-size: 10px; line-height: 1.7; letter-spacing: .08em; opacity: .7; text-align: left; }
+.cp-head .cp-label { grid-area: label; font-size: 11px; letter-spacing: .12em; opacity: .75; }
+.cp-head h2 { grid-area: title; margin: 4px 0 0; font-size: clamp(32px, 5vw, 56px); line-height: .95; font-weight: 400; }
+.cp-head .cp-data { grid-area: data; font-size: 10px; line-height: 1.7; letter-spacing: .08em; opacity: .7; }
 .cp-head button {
+  grid-area: button;
   background: #fff; color: #0b0f13; border: 0; padding: 10px 16px;
   font-size: 11px; letter-spacing: .08em; cursor: pointer;
   transition: transform .25s ease, background .25s ease;
-  margin-left: auto;
 }
 .cp-head button:hover { transform: translateX(-4px); background: #dfe8f1; }
 .cp-scroll {
@@ -155,9 +158,15 @@ const css = `
 .cp-empty { text-align: center; color: #fff; padding: 60px 20px; opacity: .7; font-size: 12px; letter-spacing: .08em; }
 @keyframes cp-rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
 @media (max-width: 600px) {
-  .cp-head { flex-direction: column; align-items: flex-start; gap: 12px; padding: 14px 16px 18px; }
+  .cp-head {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "label button" "title title" "data data";
+    row-gap: 6px; align-items: center;
+    padding: 14px 16px 18px;
+  }
   .cp-head h2 { font-size: 32px; }
-  .cp-head .cp-data { text-align: left; font-size: 9px; }
+  .cp-head .cp-data { font-size: 9px; margin-top: 6px; }
+  .cp-head button { padding: 8px 12px; font-size: 10px; }
   .cp-scroll { padding: 10px 16px 80px; }
   .cp-row { gap: 10px; padding: 8px; }
   .cp-row-img { width: 64px; height: 78px; }
@@ -230,17 +239,15 @@ export default function CartPage(props: CartPageProps) {
           </nav>
         )}
         <div className="cp-head">
-          <div>
-            <span>[ YOUR CART ]</span>
-            <h2>CART</h2>
-          </div>
-          <div className="cp-data">
-            [ {cartCount} ITEMS ]<br />
-            [ £{cartItems[0]?.price ?? 85} / ITEM ]<br />
-            [ 72H HOLD ]
-          </div>
-          <button onClick={onBack}>← CONTINUE SHOPPING</button>
+        <span className="cp-label">[ YOUR CART ]</span>
+        <button onClick={onBack}>← CONTINUE SHOPPING</button>
+        <h2>CART</h2>
+        <div className="cp-data">
+          [ {cartCount} ITEMS ]<br />
+          [ KES{cartItems[0]?.price ?? 85} / ITEM ]<br />
+          [ 72H HOLD ]
         </div>
+      </div>
       </div>
 
       <main className="cp-scroll">
@@ -265,7 +272,7 @@ export default function CartPage(props: CartPageProps) {
                   <div className="cp-row-body">
                     <div className="cp-row-name">{item.name}</div>
                     <div className="cp-row-meta">Size {item.size} · Qty {item.qty} · {item.delivery === "delivery" ? "Delivery" : "Pick up"}</div>
-                    <div className="cp-row-price">£{(item.qty * (item.price ?? 85)).toFixed(2)}</div>
+                    <div className="cp-row-price">KES{(item.qty * (item.price ?? 85)).toFixed(2)}</div>
                   </div>
                   <button className="cp-row-remove" onClick={(e) => { e.stopPropagation(); removeItem(i); }} aria-label="Remove">×</button>
                 </div>
@@ -282,7 +289,7 @@ export default function CartPage(props: CartPageProps) {
                   <div className="cp-panel-meta">Size {selectedItem.size} · Qty {selectedItem.qty} · {selectedItem.delivery === "delivery" ? "Delivery" : "Pick up"}</div>
                   <div className="cp-panel-total">
                     <span>TOTAL</span>
-                    <b>£{total}.00</b>
+                    <b>KES{total.toFixed(2)}</b>
                   </div>
                   {!userEmail && (
                     <div className="cp-email">
@@ -294,7 +301,7 @@ export default function CartPage(props: CartPageProps) {
                     <p style={{ fontSize: 10, opacity: .7, marginTop: 10, letterSpacing: ".06em" }}>Saved to {userEmail} · expires in 72h</p>
                   )}
                   <div className="cp-actions">
-                    <button className="cp-buy" onClick={buy}>BUY NOW — £{total}.00</button>
+                    <button className="cp-buy" onClick={buy}>BUY NOW — KES{total.toFixed(2)}</button>
                     <button className="cp-chat" onClick={() => setChatOpen(true)}>
                       <Icon name="chat" size={14} /> CHAT WITH US
                     </button>

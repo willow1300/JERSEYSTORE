@@ -27,7 +27,7 @@ export interface ArchiveProps {
 
 const NAV_LINKS = ["Collection", "Jerseys", "Retro", "Archive"];
 
-const formatPrice = (n: number) => `£${n.toFixed(2)}`;
+const formatPrice = (n: number) => `KES${n.toFixed(2)}`;
 
 function Icon({ name, size = 17 }: { name: "arrow" | "bag" | "menu" | "profile" | "search" | "x"; size?: number }) {
   const paths: Record<string, React.ReactNode> = {

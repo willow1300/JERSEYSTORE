@@ -471,7 +471,7 @@ export default function TeamPage({
                     <article className="tp-card" key={kit.label} style={{ animationDelay: `${0.15 + i * 0.15}s` }}>
                       <button
                         className="tp-img"
-                        onClick={() => onAdd(`${team.name} ${kit.label}`, kit.image, kit.price)}
+                        onClick={() => onAdd(kit.label.toLowerCase().startsWith(team.name.toLowerCase()) ? kit.label : `${team.name} ${kit.label}`, kit.image, kit.price)}
                         aria-label={`Add ${team.name} ${kit.label} to bag`}
                       >
                         <img src={kit.image} alt={`${team.name} ${kit.label}`} loading="lazy" />
