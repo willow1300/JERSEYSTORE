@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { retroKits as localKits } from "./retroKits";
 import {
   fetchAllCloudinaryKits,
+  getCachedAllCloudinaryKits,
   CLOUDINARY_CLOUD_NAME,
 } from "./cloudinary";
 
@@ -100,10 +101,12 @@ const Retro: React.FC<RetroProps> = ({
   menuOpen = false,
   setMenuOpen,
 }) => {
-  const [kits, setKits] = useState<Kit[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const cachedRetro = getCachedAllCloudinaryKits();
+  const [kits, setKits] = useState<Kit[]>(cachedRetro ? cachedRetro.filter((k) => k.retro).map((k) => ({ id: k.id, name: k.name, image: k.image, price: k.price, inStock: k.inStock })) : []);
+  const [loading, setLoading] = useState<boolean>(!cachedRetro);
 
   useEffect(() => {
+    if (cachedRetro) { setLoading(false); return; }
     let cancelled = false;
     (async () => {
       try {

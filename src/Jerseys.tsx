@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { fetchAllCloudinaryKits, CLOUDINARY_CLOUD_NAME } from "./cloudinary";
+import { fetchAllCloudinaryKits, getCachedAllCloudinaryKits, CLOUDINARY_CLOUD_NAME } from "./cloudinary";
 
 /* ---------- Types ---------- */
 export interface Kit {
@@ -110,11 +110,13 @@ const Jerseys: React.FC<JerseysProps> = ({
   menuOpen = false,
   setMenuOpen,
 }) => {
-  const [kits, setKits] = useState<Kit[]>(kitsProp ?? DEFAULT_KITS);
+  const cachedJerseys = getCachedAllCloudinaryKits();
+  const [kits, setKits] = useState<Kit[]>(cachedJerseys ? cachedJerseys.map((k) => ({ id: k.id, name: k.name, image: k.image, price: k.price, inStock: k.inStock, retro: k.retro })) : (kitsProp ?? DEFAULT_KITS));
   const [filterOpen, setFilterOpen] = useState(false);
   const [tone, setTone] = useState('ALL');
 
   useEffect(() => {
+    if (cachedJerseys) return;
     if (!CLOUDINARY_CLOUD_NAME) return;
     let cancelled = false;
     fetchAllCloudinaryKits()

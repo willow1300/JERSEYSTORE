@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { fetchAllCloudinaryKits, CLOUDINARY_CLOUD_NAME } from "./cloudinary";
+import { fetchAllCloudinaryKits, getCachedAllCloudinaryKits, CLOUDINARY_CLOUD_NAME } from "./cloudinary";
 import { teamSlug } from "./teams";
 
 export interface ArchiveEntry {
@@ -146,8 +146,21 @@ export default function ArchivePage({
     setMenuOpen?.(false);
   };
 
-  const [entries, setEntries] = useState<ArchiveEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [entries, setEntries] = useState<ArchiveEntry[]>(() => {
+    const c = getCachedAllCloudinaryKits();
+    if (!c) return [];
+    return c.map((k) => ({
+      id: k.id,
+      club: parseClub(k.name),
+      season: parseSeason(k.name),
+      kit: parseKit(k.name),
+      price: k.price,
+      status: k.inStock ? "IN STOCK" : "SOLD OUT",
+      image: k.image,
+      teamId: teamSlug(parseClub(k.name)),
+    }));
+  });
+  const [loading, setLoading] = useState(() => !getCachedAllCloudinaryKits());
   const [statusFilter, setStatusFilter] = useState<"ALL" | "IN STOCK" | "SOLD OUT">("ALL");
   const [decadeFilter, setDecadeFilter] = useState<"ALL" | "1990s" | "2000s" | "2010s" | "2020s">("ALL");
   const [search, setSearch] = useState("");
@@ -159,6 +172,8 @@ export default function ArchivePage({
   const [emailError, setEmailError] = useState("");
 
   useEffect(() => {
+    const cached = getCachedAllCloudinaryKits();
+    if (cached) { setLoading(false); return; }
     let cancelled = false;
     (async () => {
       try {
