@@ -22,7 +22,7 @@ export interface RetroProps {
   onSelectKit?: (kit: Kit) => void;
   onCartClick?: () => void;
   onProfileClick?: () => void;
-  onAdd?: (name: string, image?: string) => void;
+  onAdd?: (name: string, image?: string, price?: number) => void;
   menuOpen?: boolean;
   setMenuOpen?: (v: boolean) => void;
 }
@@ -63,13 +63,13 @@ const Header: React.FC<Pick<RetroProps, "cartCount" | "onNavigate" | "onCartClic
   </header>
 );
 
-const KitCard: React.FC<{ kit: Kit; onSelect?: (kit: Kit) => void; onAdd?: (name: string, image?: string) => void }> = ({ kit, onSelect, onAdd }) => (
+const KitCard: React.FC<{ kit: Kit; onSelect?: (kit: Kit) => void; onAdd?: (name: string, image?: string, price?: number) => void }> = ({ kit, onSelect, onAdd }) => (
   <article className="flex flex-col">
     <button
       type="button"
       className="kit-image"
       onClick={() => {
-        onAdd?.(kit.name, kit.image);
+        onAdd?.(kit.name, kit.image, kit.price);
         onSelect?.(kit);
       }}
       aria-label={`Add ${kit.name} to bag`}

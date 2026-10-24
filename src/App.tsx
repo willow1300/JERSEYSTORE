@@ -185,13 +185,14 @@ export default function App() {
   const [teamId, setTeamId] = useState<string | null>(null)
   const [pendingAdd, setPendingAdd] = useState<string | null>(null)
   const [pendingImage, setPendingImage] = useState<string>('')
+  const [pendingPrice, setPendingPrice] = useState<number>(85)
   const [addSize, setAddSize] = useState('M')
   const [addQty, setAddQty] = useState(1)
   const [addDelivery, setAddDelivery] = useState<'delivery' | 'pickup'>('delivery')
   const [addSuccess, setAddSuccess] = useState(false)
   const [orderSuccess, setOrderSuccess] = useState(false)
   const [checkoutOpen, setCheckoutOpen] = useState(false)
-  const [cartItems, setCartItems] = useState<{name:string;size:string;qty:number;delivery:string;image?:string}[]>([])
+  const [cartItems, setCartItems] = useState<{name:string;size:string;qty:number;delivery:string;image?:string;price?:number}[]>([])
   const [userEmail, setUserEmail] = useState<string | null>(null)
 
   const openLeague = (id: string) => {
@@ -251,9 +252,10 @@ export default function App() {
     setCartCount(cartItems.reduce((sum, i) => sum + i.qty, 0))
   }, [cartItems])
 
-  const requestAdd = (name: string, image?: string) => {
+  const requestAdd = (name: string, image?: string, price?: number) => {
     setPendingAdd(name)
     setPendingImage(image || '')
+    setPendingPrice(price ?? 85)
     setAddSize('M')
     setAddQty(1)
     setAddDelivery('delivery')
@@ -261,7 +263,7 @@ export default function App() {
 
   const confirmAdd = () => {
     if (!pendingAdd) return
-    setCartItems((prev) => [...prev, { name: pendingAdd, size: addSize, qty: addQty, delivery: addDelivery, image: pendingImage }])
+    setCartItems((prev) => [...prev, { name: pendingAdd, size: addSize, qty: addQty, delivery: addDelivery, image: pendingImage, price: pendingPrice }])
     setAddSuccess(true)
     window.setTimeout(() => {
       setAddSuccess(false)

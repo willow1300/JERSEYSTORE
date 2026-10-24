@@ -19,7 +19,7 @@ export interface ArchiveProps {
   setMenuOpen?: (v: boolean) => void;
   onNavigate?: (label: string) => void;
   onSelect?: (teamId: string) => void;
-  onAdd?: (name: string, image?: string) => void;
+  onAdd?: (name: string, image?: string, price?: number) => void;
   onNotify?: (email: string, entry: ArchiveEntry) => void;
   onCartClick?: () => void;
   onProfileClick?: () => void;
@@ -296,7 +296,7 @@ export default function ArchivePage({
                 <div className="ar-status">
                   <span className={`ar-tag ${isSold ? "out" : "in"}`}>{isSold ? "× SOLD OUT" : "● IN STOCK"}</span>
                   {!isSold ? (
-                    <button className="ar-btn" onClick={() => { if (entry.teamId && onSelect) onSelect(entry.teamId); else if (onAdd) onAdd(`${entry.club} ${entry.season} ${entry.kit}`, entry.image); }} disabled={!entry.teamId && !onAdd}>VIEW →</button>
+                    <button className="ar-btn" onClick={() => { if (entry.teamId && onSelect) onSelect(entry.teamId); else if (onAdd) onAdd(`${entry.club} ${entry.season} ${entry.kit}`, entry.image, entry.price); }} disabled={!entry.teamId && !onAdd}>VIEW →</button>
                   ) : isNotified ? (
                     <span className="ar-msg">✓ WE'LL TELL YOU</span>
                   ) : (

@@ -32,6 +32,7 @@ interface CartItem {
   qty: number;
   delivery: string;
   image?: string;
+  price?: number;
 }
 
 interface CartPageProps {
@@ -152,6 +153,18 @@ const css = `
 .cp-chat:hover { background: rgba(255,255,255,.1); border-color: #fff; }
 .cp-empty { text-align: center; color: #fff; padding: 60px 20px; opacity: .7; font-size: 12px; letter-spacing: .08em; }
 @keyframes cp-rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+@media (max-width: 600px) {
+  .cp-head { flex-direction: column; align-items: flex-start; gap: 12px; padding: 14px 16px 18px; }
+  .cp-head h2 { font-size: 32px; }
+  .cp-head .cp-data { text-align: left; font-size: 9px; }
+  .cp-scroll { padding: 10px 16px 80px; }
+  .cp-row { gap: 10px; padding: 8px; }
+  .cp-row-img { width: 64px; height: 78px; }
+  .cp-row-name { font-size: 12px; }
+  .cp-row-meta { font-size: 9px; }
+  .cp-row-price { font-size: 12px; }
+  .cp-panel-name { font-size: 15px; }
+}
 `;
 export default function CartPage(props: CartPageProps) {
   const { cartItems, setCartItems, cartCount, userEmail, setUserEmail, menuOpen, setMenuOpen, onNavigate, onBack, setToast } = props;
@@ -164,7 +177,7 @@ export default function CartPage(props: CartPageProps) {
   const safeSelected = Math.min(selected, Math.max(0, cartItems.length - 1));
   const selectedItem = cartItems[safeSelected];
 
-  const total = cartItems.reduce((s, i) => s + i.qty, 0) * 85;
+  const total = cartItems.reduce((s, i) => s + i.qty * (i.price ?? 85), 0);
 
   const removeItem = (idx: number) => {
     setCartItems((prev) => prev.filter((_, i) => i !== idx));
@@ -222,7 +235,7 @@ export default function CartPage(props: CartPageProps) {
           </div>
           <div className="cp-data">
             [ {cartCount} ITEMS ]<br />
-            [ £85 / ITEM ]<br />
+            [ £{cartItems[0]?.price ?? 85} / ITEM ]<br />
             [ 72H HOLD ]
           </div>
           <button onClick={onBack}>← CONTINUE SHOPPING</button>
@@ -251,7 +264,7 @@ export default function CartPage(props: CartPageProps) {
                   <div className="cp-row-body">
                     <div className="cp-row-name">{item.name}</div>
                     <div className="cp-row-meta">Size {item.size} · Qty {item.qty} · {item.delivery === "delivery" ? "Delivery" : "Pick up"}</div>
-                    <div className="cp-row-price">£{item.qty * 85}.00</div>
+                    <div className="cp-row-price">£{(item.qty * (item.price ?? 85)).toFixed(2)}</div>
                   </div>
                   <button className="cp-row-remove" onClick={(e) => { e.stopPropagation(); removeItem(i); }} aria-label="Remove">×</button>
                 </div>

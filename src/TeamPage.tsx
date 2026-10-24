@@ -12,7 +12,7 @@ interface TeamPageProps {
   setMenuOpen: (v: boolean) => void;
   onNavigate: (page: PageName) => void;
   onBack: () => void;
-  onAdd: (name: string, image?: string) => void;
+  onAdd: (name: string, image?: string, price?: number) => void;
 }
 
 function Icon({ name, size = 15 }: { name: "bag" | "menu" | "profile" | "x"; size?: number }) {
@@ -268,14 +268,14 @@ export default function TeamPage({
   const awayJersey = team ? (team as { awayJersey?: string }).awayJersey : undefined;
   const localKits = team
     ? [
-        { label: "Home Kit", image: team.jersey },
-        ...(awayJersey ? [{ label: "Away Kit", image: awayJersey }] : []),
+        { label: "Home Kit", image: team.jersey, price: parseFloat(String(team.price).replace(/[^0-9.]/g, '')) || 12 },
+        ...(awayJersey ? [{ label: "Away Kit", image: awayJersey, price: parseFloat(String(team.price).replace(/[^0-9.]/g, '')) || 12 }] : []),
       ]
     : [];
 
   // Cloudinary 26/27 jerseys are stored under the tag "NewSeason2627".
   // Match resources to this team by name/public_id. If none match -> Coming Soon.
-  const [cloudKits, setCloudKits] = useState<{ name: string; image: string }[]>([]);
+  const [cloudKits, setCloudKits] = useState<{ name: string; image: string; price?: number }[]>([]);
   const [cloudChecked, setCloudChecked] = useState(false);
   useEffect(() => {
     if (!team) {
@@ -299,7 +299,7 @@ export default function TeamPage({
             k.id.toLowerCase().includes(team.id)
           );
         });
-        setCloudKits(matches.map((k) => ({ name: k.name, image: k.image })));
+        setCloudKits(matches.map((k) => ({ name: k.name, image: k.image, price: k.price })));
         setCloudChecked(true);
       })
       .catch(() => {
@@ -342,6 +342,7 @@ export default function TeamPage({
           ? cloudKits.map((k, i) => ({
               label: k.name || (i === 0 ? "Home Kit" : `Kit ${i + 1}`),
               image: k.image,
+              price: k.price ?? (parseFloat(String(team.price).replace(/[^0-9.]/g, '')) || 12),
             }))
           : []
         : localKits
@@ -470,7 +471,7 @@ export default function TeamPage({
                     <article className="tp-card" key={kit.label} style={{ animationDelay: `${0.15 + i * 0.15}s` }}>
                       <button
                         className="tp-img"
-                        onClick={() => onAdd(`${team.name} ${kit.label}`, kit.image)}
+                        onClick={() => onAdd(`${team.name} ${kit.label}`, kit.image, kit.price)}
                         aria-label={`Add ${team.name} ${kit.label} to bag`}
                       >
                         <img src={kit.image} alt={`${team.name} ${kit.label}`} loading="lazy" />
