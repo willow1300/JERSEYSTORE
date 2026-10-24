@@ -82,6 +82,7 @@ const css = `
   background: #fff; color: #0b0f13; border: 0; padding: 10px 16px;
   font-size: 11px; letter-spacing: .08em; cursor: pointer;
   transition: transform .25s ease, background .25s ease;
+  margin-left: auto;
 }
 .cp-head button:hover { transform: translateX(-4px); background: #dfe8f1; }
 .cp-scroll {

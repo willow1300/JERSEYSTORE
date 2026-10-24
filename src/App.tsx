@@ -419,7 +419,7 @@ export default function App() {
                 </div>
 
                 <button className="checkout-confirm" onClick={confirmAdd}>
-                  ADD TO CART — £{85 * addQty}.00
+                  ADD TO CART — £{(pendingPrice * addQty).toFixed(2)}
                 </button>
               </>
             )}
@@ -478,7 +478,7 @@ export default function App() {
                       </div>
                       <div className="checkout-row checkout-total">
                         <span>Total</span>
-                        <b>£{cartItems.reduce((s, i) => s + i.qty, 0) * 85}.00</b>
+                        <b>£{cartItems.reduce((s, i) => s + i.qty * (i.price ?? 85), 0).toFixed(2)}</b>
                       </div>
                     </div>
                     {!userEmail && (
