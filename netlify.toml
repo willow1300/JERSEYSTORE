@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npx --yes pnpm@10.30.3 install --frozen-lockfile --prod=false && npm run build"
   publish = "dist"
 
 [[redirects]]
