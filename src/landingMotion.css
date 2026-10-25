@@ -1,0 +1,7 @@
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis-stopped {
+  overflow: hidden;
+}

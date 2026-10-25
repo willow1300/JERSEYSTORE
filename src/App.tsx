@@ -8,6 +8,7 @@ import CartPage from './CartPage'
 import { leagues } from './leagues'
 import type { League } from './leagues'
 import type { Team } from './teams'
+import { useLandingMotion } from './landingMotion'
 
 function Icon({ name, size = 17 }: { name: 'arrow' | 'bag' | 'menu' | 'profile' | 'search' | 'x'; size?: number }) {
   const paths = {
@@ -194,6 +195,8 @@ export default function App() {
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [cartItems, setCartItems] = useState<{name:string;size:string;qty:number;delivery:string;image?:string;price?:number}[]>([])
   const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  useLandingMotion(page === 'landing')
 
   // Browser history support so the back button works between pages.
   const isPopRef = useRef(false)
