@@ -1,7 +1,97 @@
+/* ───── Lenis smooth-scroll helpers ───── */
 .lenis.lenis-smooth {
-  scroll-behavior: auto;
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
-.lenis-stopped {
-  overflow: hidden;
+/* ───── Preloader (created by landingMotion.ts, removed after the curtain wipe) ───── */
+.lm-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #0f1820 0%, #05080b 100%);
+  color: #fff;
+  will-change: clip-path;
+}
+.lm-preloader-logo {
+  font-family: "Barlow Condensed", "Oswald", "Arial Narrow", sans-serif;
+  font-weight: 800;
+  font-size: clamp(72px, 16vw, 200px);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  text-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+}
+.lm-preloader-logo span {
+  opacity: 0.55;
+}
+.lm-preloader-count {
+  position: absolute;
+  left: clamp(18px, 4vw, 48px);
+  bottom: clamp(24px, 5vh, 48px);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  opacity: 0.8;
+}
+.lm-preloader-count b {
+  font-weight: 400;
+}
+.lm-preloader-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+/* ───── Lens cursor (mouse devices only, created by the hook) ───── */
+.lm-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  background: #fff;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0;
+  will-change: transform;
+}
+
+/* ───── Scroll progress line ───── */
+.lm-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #fff;
+  mix-blend-mode: difference;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
+  z-index: 9997;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .lm-cursor {
+    display: none;
+  }
 }
