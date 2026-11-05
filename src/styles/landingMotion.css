@@ -1,0 +1,103 @@
+/* ───── Lenis smooth-scroll helpers ───── */
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* ───── Preloader (created by landingMotion.ts, removed after the curtain wipe) ───── */
+.lm-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: maroon;
+  will-change: clip-path;
+}
+.lm-preloader-logo {
+  display: flex; align-items: center; justify-content: center;
+}
+.lm-preloader-logo img {
+  width: clamp(100px, 20vw, 240px); height: auto;
+}
+.lm-preloader-count {
+  position: absolute;
+  left: clamp(18px, 4vw, 48px);
+  bottom: clamp(24px, 5vh, 48px);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: maroon;
+  opacity: 0.75;
+}
+.lm-preloader-count b {
+  font-weight: 400;
+}
+.lm-preloader-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: maroon;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+/* ───── Preloader exit: maroon panel sweeps up to reveal the page ───── */
+.lm-swipe {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: maroon;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* ───── Lens cursor (mouse devices only, created by the hook) ───── */
+.lm-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border-radius: 50%;
+  background: #fff;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0;
+  will-change: transform;
+}
+
+/* ───── Scroll progress line ───── */
+.lm-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #fff;
+  mix-blend-mode: difference;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
+  z-index: 9997;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .lm-cursor {
+    display: none;
+  }
+}

@@ -3,6 +3,10 @@ dist/
 build/
 .cache/
 .env*
+# The documented template is safe to commit (all values blank); the real keys
+# live in .env.local and stay ignored.
+!.env.example
+.DS_Store
 .vite/
 vite.config.*.timestamp-*
 *.tsbuildinfo
