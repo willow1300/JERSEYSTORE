@@ -94,6 +94,7 @@ const ProductPage: React.FC<ProductPageProps & { onSelectProduct?: (p: Product) 
   onAddToCart,
   wishlistIds = [],
   onToggleWishlist,
+  onOpenAuth,
   menuOpen = false,
   setMenuOpen,
   onSelectProduct,
@@ -176,7 +177,7 @@ const ProductPage: React.FC<ProductPageProps & { onSelectProduct?: (p: Product) 
           {NAV_LINKS.map((label) => (
             <a key={label} onClick={() => { onNavigate?.(label); setMenuOpen?.(false); }} style={{ cursor: 'pointer' }}>{label.toUpperCase()}</a>
           ))}
-          <a onClick={() => { setMenuOpen?.(false); }} style={{ cursor: 'pointer' }}>PROFILE</a>
+          <a onClick={() => { onOpenAuth?.(); setMenuOpen?.(false); }} style={{ cursor: 'pointer' }}>PROFILE</a>
         </nav>
       )}
 

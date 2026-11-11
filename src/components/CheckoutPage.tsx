@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import {
   DELIVERY_ENABLED,
-  deliveryFeeFor,
   deliveryLabel,
-  defaultDeliveryFee,
   defaultZone,
   fetchDeliveryZones,
   getCachedDeliveryZones,
   type DeliveryZone,
 } from "../utils/delivery";
+import { WHATSAPP_NUMBER } from "../utils/constants";
+import { ORDERS_ENABLED, submitOrder } from "../utils/orders";
 
 /* ---------- Types ---------- */
 export interface CartLine {
@@ -26,6 +26,7 @@ export interface CheckoutPageProps {
   account: string | null;
   onPlaced: () => void;
   onNavigate?: (label: string) => void;
+  onProfileClick?: () => void;
   menuOpen?: boolean;
   setMenuOpen?: (v: boolean) => void;
 }
@@ -34,9 +35,10 @@ const NAV_LINKS = ["New-Arrival", "All-Kits", "Best-Sellers", "Retro"];
 const formatPrice = (n: number) => `Ksh ${n.toLocaleString()}`;
 
 /* ---------- Header (mirrors landing) ---------- */
-const Header: React.FC<Pick<CheckoutPageProps, "cartCount" | "onNavigate" | "menuOpen" | "setMenuOpen">> = ({
+const Header: React.FC<Pick<CheckoutPageProps, "cartCount" | "onNavigate" | "onProfileClick" | "menuOpen" | "setMenuOpen">> = ({
   cartCount = 0,
   onNavigate,
+  onProfileClick,
   menuOpen = false,
   setMenuOpen,
 }) => (
@@ -50,7 +52,7 @@ const Header: React.FC<Pick<CheckoutPageProps, "cartCount" | "onNavigate" | "men
     <div className="tools">
       <button className="cart-trigger" aria-label={`Bag with ${cartCount} items`}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><b key={cartCount}>{cartCount}</b></button>
       <button className="wishlist-trigger" aria-label="Wishlist"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg></button>
-      <button className="profile-trigger" aria-label="Profile"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a8 8 0 0 1 16 0v1" /></svg></button>
+      <button className="profile-trigger" aria-label="Profile" onClick={onProfileClick}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a8 8 0 0 1 16 0v1" /></svg></button>
       <button className="menu-trigger" onClick={() => setMenuOpen?.(!menuOpen)} aria-label="Open navigation"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 7h16" /><path d="M4 17h16" /></svg></button>
     </div>
   </header>
@@ -63,6 +65,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
   account,
   onPlaced,
   onNavigate,
+  onProfileClick,
   menuOpen = false,
   setMenuOpen,
 }) => {
@@ -74,8 +77,11 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const [error, setError] = useState('');
   const [paidTotal, setPaidTotal] = useState(0);
   const [placedArea, setPlacedArea] = useState('');
+  const [chatUrl, setChatUrl] = useState('');
+  const [orderSaved, setOrderSaved] = useState<boolean | null>(null);
 
-  // Areas + fees come from BaseRow; empty means the flat fallback fee applies.
+  // Areas come from BaseRow. The delivery fee itself is never charged at
+  // checkout — it is agreed on WhatsApp after the order is placed.
   const [zones, setZones] = useState<DeliveryZone[]>(() => getCachedDeliveryZones() ?? []);
   const [zoneId, setZoneId] = useState('');
 
@@ -90,11 +96,9 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
   const linesTotal = cartItems.reduce((s, i) => s + (i.price ?? 0) * i.qty, 0);
   const hasDelivery = cartItems.some((i) => i.delivery === 'delivery');
-  const zoneFee = deliveryFeeFor(zones, zoneId);
-  const shipping = hasDelivery ? zoneFee : 0;
-  const total = linesTotal + shipping;
+  // Kits only — the delivery fee is agreed on WhatsApp after checkout.
+  const total = linesTotal;
 
-  const defaultFee = defaultDeliveryFee(zones);
   const areaZone = defaultZone(zones);
   // The default option shows the flagged row's name when there is one.
   const defaultLabel = areaZone ? areaZone.location : 'DEFAULT AREA';
@@ -103,12 +107,53 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const listedZones = zones.filter((z) => z.id !== (areaZone?.id ?? ''));
   const areaLabel = hasDelivery ? deliveryLabel(zones, zoneId) : 'PICK AT SHOP';
 
+  // WhatsApp message carrying the order details so the delivery fee can be
+  // agreed in chat instead of being charged at checkout.
+  const deliveryChatUrl = () => {
+    const lines = cartItems
+      .map((i) => `• ${i.name} · ${i.size} · ×${i.qty} (${i.delivery === 'delivery' ? 'Delivery' : 'Pickup'})`)
+      .join('\n');
+    const msg = [
+      `Hi MJ Erseys! I just placed order ${orderRef}.`,
+      `Name: ${name.trim()}`,
+      `Phone: ${phone.trim()}`,
+      'Items:',
+      lines,
+      note.trim() ? `Area / Note: ${note.trim()}` : '',
+      `I have paid ${formatPrice(total)} for the kits — let's agree on the delivery fee for ${areaLabel}.`,
+    ].filter(Boolean).join('\n');
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  };
+
   const confirm = () => {
     if (!name.trim()) { setError('ENTER YOUR NAME'); return; }
     if (phone.trim().length < 9) { setError('ENTER A VALID PHONE FOR M-PESA'); return; }
     setError('');
     setPaidTotal(total);
-    setPlacedArea(`${areaLabel} · ${shipping ? formatPrice(shipping) : 'FREE'}`);
+    setPlacedArea(hasDelivery ? `${areaLabel} · FEE AGREED ON CHAT` : 'PICK AT SHOP · FREE');
+    if (hasDelivery) {
+      const url = deliveryChatUrl();
+      setChatUrl(url);
+      // Straight to chat after paying so the delivery fee is agreed there.
+      window.open(url, '_blank', 'noopener');
+    }
+    // Save the order to BaseRow so the shop has a record of it (never blocks checkout).
+    if (ORDERS_ENABLED) {
+      submitOrder({
+        orderRef,
+        name: name.trim(),
+        phone: phone.trim(),
+        items: cartItems
+          .map((i) => `${i.name} · ${i.size} · ×${i.qty} · ${i.delivery === 'delivery' ? 'Delivery' : 'Pickup'}`)
+          .join('\n'),
+        amount: total,
+        fulfillment: hasDelivery ? 'Delivery' : 'Pickup',
+        area: hasDelivery ? areaLabel : 'Pick at shop',
+        note: note.trim(),
+        account: account || '',
+        placedAt: new Date().toISOString(),
+      }).then(setOrderSaved).catch(() => {});
+    }
     setPlaced(true);
     onPlaced();
     window.scrollTo({ top: 0 });
@@ -116,14 +161,14 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
   return (
     <div className="ak-page">
-      <Header cartCount={cartCount} onNavigate={onNavigate} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <Header cartCount={cartCount} onNavigate={onNavigate} onProfileClick={onProfileClick} menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
       {menuOpen && (
         <nav className="mobile-nav">
           {NAV_LINKS.map((label) => (
             <a key={label} onClick={() => { onNavigate?.(label); setMenuOpen?.(false); }} style={{ cursor: 'pointer' }}>{label.toUpperCase()}</a>
           ))}
-          <a onClick={() => { setMenuOpen?.(false); }} style={{ cursor: 'pointer' }}>PROFILE</a>
+          <a onClick={() => { onProfileClick?.(); setMenuOpen?.(false); }} style={{ cursor: 'pointer' }}>PROFILE</a>
         </nav>
       )}
 
@@ -149,6 +194,14 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
               {placedArea ? ` · ${placedArea.toUpperCase()}` : ''}
               {account ? ` · ACCOUNT ${account.toUpperCase()}` : ''}
             </p>
+            {orderSaved && (
+              <p className="ck-account">ORDER SAVED TO OUR RECORDS ✓ — WE'LL CONFIRM VIA WHATSAPP</p>
+            )}
+            {hasDelivery && (
+              <a className="ck-confirm" href={chatUrl} target="_blank" rel="noopener noreferrer">
+                AGREE DELIVERY FEE ON WHATSAPP
+              </a>
+            )}
             <button className="ck-back" onClick={() => onNavigate?.('New-Arrival')}>CONTINUE SHOPPING</button>
           </section>
         ) : cartItems.length === 0 ? (
@@ -177,9 +230,9 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
                     value={zoneId}
                     onChange={(e) => setZoneId(e.target.value)}
                   >
-                    <option value="">{defaultLabel} — {formatPrice(defaultFee)}</option>
+                    <option value="">{defaultLabel}</option>
                     {listedZones.map((z) => (
-                      <option key={z.id} value={z.id}>{z.location} — {formatPrice(z.fee)}</option>
+                      <option key={z.id} value={z.id}>{z.location}</option>
                     ))}
                   </select>
                 </div>
@@ -204,7 +257,12 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
               {account ? (
                 <p className="ck-account">ORDER SAVED TO {account.toUpperCase()}</p>
               ) : (
-                <p className="ck-account dim">NO ACCOUNT — THIS ORDER WILL NOT BE SAVED AFTER CHECKOUT</p>
+                <>
+                  <p className="ck-account dim">CHECKING OUT AS GUEST — NO ACCOUNT NEEDED</p>
+                  <button type="button" className="ck-edit" onClick={() => onProfileClick?.()} style={{ marginBottom: 8 }}>
+                    CREATE ACCOUNT / SIGN IN (OPTIONAL)
+                  </button>
+                </>
               )}
 
               {error && <p className="ck-error">{error}</p>}
@@ -229,7 +287,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
               ))}
               <div className="ck-totals">
                 <div className="ck-total-row"><span>SUBTOTAL</span><b>{formatPrice(linesTotal)}</b></div>
-                <div className="ck-total-row"><span>DELIVERY{hasDelivery && zones.length ? ` · ${areaLabel}` : ''}</span><b>{shipping ? formatPrice(shipping) : 'FREE'}</b></div>
+                <div className="ck-total-row"><span>DELIVERY{hasDelivery && zones.length ? ` · ${areaLabel}` : ''}</span><b>{hasDelivery ? 'AGREE ON CHAT' : 'FREE'}</b></div>
                 <div className="ck-total-row ck-grand"><span>TOTAL</span><b>{formatPrice(total)}</b></div>
               </div>
             </aside>

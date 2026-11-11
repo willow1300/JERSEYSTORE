@@ -46,6 +46,7 @@ interface CartPageProps {
   onNavigate: (page: PN) => void;
   onBack: () => void;
   setToast: (v: string) => void;
+  onProfileClick?: () => void;
 }
 
 const formatPrice = (n: number) => `Ksh ${n.toLocaleString()}`;
@@ -181,7 +182,7 @@ const css = `
 }
 `;
 export default function CartPage(props: CartPageProps) {
-  const { cartItems, setCartItems, cartCount, userEmail, setUserEmail, menuOpen, setMenuOpen, onNavigate, onBack, setToast } = props;
+  const { cartItems, setCartItems, cartCount, userEmail, setUserEmail, menuOpen, setMenuOpen, onNavigate, onBack, setToast, onProfileClick } = props;
   const [selected, setSelected] = useState(0);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMsg, setChatMsg] = useState("");
@@ -226,7 +227,7 @@ export default function CartPage(props: CartPageProps) {
               <Icon name="bag" /><b>{cartCount}</b>
             </button>
             <button className="wishlist-trigger" aria-label="Wishlist"><Icon name="heart" /></button>
-            <button className="profile-trigger" aria-label="Profile"><Icon name="profile" /></button>
+            <button className="profile-trigger" aria-label="Profile" onClick={onProfileClick}><Icon name="profile" /></button>
             <button className="menu-trigger" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open navigation">
               <Icon name={menuOpen ? "x" : "menu"} size={17} />
             </button>
@@ -238,6 +239,7 @@ export default function CartPage(props: CartPageProps) {
             <a onClick={() => go("jerseys")} style={{ cursor: "pointer" }}>All-Kits</a>
             <a onClick={() => go("bestsellers")} style={{ cursor: "pointer" }}>Best-Sellers</a>
             <a onClick={() => go("retro")} style={{ cursor: "pointer" }}>Retro</a>
+            <a onClick={() => { onProfileClick?.(); setMenuOpen(false); }} style={{ cursor: "pointer" }}>PROFILE</a>
           </nav>
         )}
         <div className="cp-head">

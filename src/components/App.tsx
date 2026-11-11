@@ -137,7 +137,7 @@ function LandingPage({
                 <button onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })} aria-label="Shop collection"><Icon name="arrow" size={22} /></button>
                 <span>ADD TO KIT</span>
               </div>
-              <div className="hero-tags">[ ALL LEAGUES ]<br />[ AUTHENTIC + RETRO ]<br />[ WORLDWIDE DELIVERY ]</div>
+              <div className="hero-tags">[ ALL LEAGUES ]<br />[ AUTHENTIC + RETRO ]<br />[ DELIVERY ]</div>
             </div>
             <img className="hero-player" src="/images/hero/NewHero.jpg" alt="Hero player" />
             <div className="preview-stack">
@@ -436,6 +436,7 @@ export default function App() {
             onNavigate={(p) => setPage(p)}
             onBack={() => setPage('landing')}
             setToast={setToast}
+            onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
           />
         ) : page === 'jerseys' ? (
           <Jerseys
@@ -448,7 +449,7 @@ export default function App() {
               setMenuOpen(false)
             }}
             onCartClick={() => setMenuOpen(false)}
-            onProfileClick={() => setMenuOpen(false)}
+            onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
             onSelectKit={(kit) => openProduct(kit)}
             menuOpen={menuOpen}
             setMenuOpen={setMenuOpen}
@@ -464,7 +465,7 @@ export default function App() {
               setMenuOpen(false)
             }}
             onCartClick={() => setMenuOpen(false)}
-            onProfileClick={() => setMenuOpen(false)}
+            onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
             onSelectKit={(kit) => openProduct(kit)}
             menuOpen={menuOpen}
             setMenuOpen={setMenuOpen}
@@ -494,6 +495,7 @@ export default function App() {
             cartCount={cartCount}
             account={account}
             onPlaced={() => { setCartItems([]); flash('ORDER PLACED — CART CLEARED') }}
+            onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
             onNavigate={(label) => {
               if (label === 'New-Arrival') setPage('landing')
               if (label === 'All-Kits') setPage('jerseys')
@@ -515,7 +517,7 @@ export default function App() {
               setMenuOpen(false)
             }}
             onCartClick={() => setMenuOpen(false)}
-            onProfileClick={() => setMenuOpen(false)}
+            onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
             onSelectKit={(kit) => openProduct(kit)}
             menuOpen={menuOpen}
             setMenuOpen={setMenuOpen}
@@ -608,7 +610,7 @@ export default function App() {
             ) : (
               <>
                 <h2 className="checkout-title am-title">{authMode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT'}</h2>
-                <p className="am-note">WISHLISTS LIVE INSIDE YOUR ACCOUNT — THEY STAY UNTIL YOU SIGN OUT</p>
+                <p className="am-note">ACCOUNTS ARE OPTIONAL — YOU CAN BUY AND CHECK OUT WITHOUT ONE. THEY ONLY SAVE YOUR WISHLIST AND ORDERS.</p>
                 <div className="qa-field">
                   <label className="qa-label">EMAIL</label>
                   <input className="qa-input" type="email" value={authEmail} onChange={(e) => setAuthEmail(e.target.value)} placeholder="you@email.com" />
@@ -620,6 +622,9 @@ export default function App() {
                 <button className="checkout-confirm am-submit" onClick={submitAuth}>{authMode === 'signin' ? 'SIGN IN' : 'CREATE ACCOUNT'}</button>
                 <button className="checkout-continue" onClick={() => setAuthMode((m) => (m === 'signin' ? 'register' : 'signin'))}>
                   {authMode === 'signin' ? 'NEW HERE? CREATE AN ACCOUNT' : 'ALREADY HAVE AN ACCOUNT? SIGN IN'}
+                </button>
+                <button className="checkout-continue" onClick={() => setAuthOpen(false)}>
+                  CONTINUE AS GUEST — NO ACCOUNT NEEDED
                 </button>
               </>
             )}

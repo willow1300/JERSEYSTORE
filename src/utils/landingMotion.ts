@@ -20,7 +20,7 @@ const SEASON_MESSAGES = [
   '[ FOOTBALL CULTURE 25.1 ] [ SERIES 01 ]',
   '[ 26/27 COLLECTION ] [ NEW DROP ]',
   '[ AUTHENTIC + RETRO ] [ ALL LEAGUES ]',
-  '[ WORLDWIDE DELIVERY ] [ PAY WITH M-PESA ]',
+  '[ DELIVERY ] [ PAY WITH M-PESA ]',
 ]
 const PRELOADER_ENABLED = true       // logo + counter + curtain on first visit
 const PRELOADER_MIN_SECONDS = 1.0    // shortest time the preloader stays up

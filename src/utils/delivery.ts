@@ -1,5 +1,7 @@
-// Delivery fees, read from a second BaseRow table so they can be retuned without
-// a redeploy. Create a table in the same database as the kits (one row per area):
+// Delivery areas, read from a second BaseRow table. Fees are NOT charged at
+// checkout anymore — after paying, shoppers are sent to WhatsApp to agree on
+// the delivery fee there. This table now only drives the area picker labels.
+// Create a table in the same database as the kits (one row per area):
 //
 //   Location / Area | Fee | Is Default
 //   Nairobi         | 200 | true
