@@ -13,7 +13,7 @@ export default function SiteFooter({ onNavigate }: { onNavigate: (page: string) 
         <div className="footer-grid">
           <div className="footer-brand-col">
             <a className="footer-logo" href="#top">mj Jerseys</a>
-            <p className="footer-tagline">Authentic and retro football jerseys in Kenya. Shop vintage kits, new drops and everyday styles, delivered across Kenya and worldwide.</p>
+            <p className="footer-tagline">Authentic and retro football jerseys in Kenya. Shop vintage kits, new drops and everyday styles, delivered across Kenya.</p>
             <div className="footer-socials">
               {INSTAGRAM_URL && (
                 <a className="footer-social-link" aria-label="Instagram" href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer">
@@ -42,7 +42,7 @@ export default function SiteFooter({ onNavigate }: { onNavigate: (page: string) 
               )}
               <div className="footer-contact-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                Nairobi, Kenya
+                <span>Nairobi, Kenya<br />Hison Limited (Biashara Street), first floor shop 111</span>
               </div>
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function SiteFooter({ onNavigate }: { onNavigate: (page: string) 
             <ul className="footer-list">
               <li><a className="footer-link" href="#top">Our Story</a></li>
               <li><a className="footer-link" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">Contact Us</a></li>
-              <li><a className="footer-link" href="https://maps.google.com/?q=Nairobi" target="_blank" rel="noopener noreferrer">Store Locator</a></li>
+              <li><a className="footer-link" href="https://maps.google.com/?q=Hison%20Limited%20Biashara%20Street%20Nairobi" target="_blank" rel="noopener noreferrer">Store Locator</a></li>
             </ul>
           </div>
           <div className="footer-bottom">
