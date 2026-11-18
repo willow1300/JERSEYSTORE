@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { findTeam, teamSlug } from "../data/teams";
+import MobileNav, { BottomNav } from "./MobileNav";
 
 const KIT_IMAGE_MAP: Record<string, string> = {
   "Barcelona Kit": "/images/jerseys/barcelona.jpg",
@@ -71,7 +72,7 @@ function Icon({ name, size = 17 }: { name: "arrow" | "bag" | "menu" | "profile" 
 const css = `
 .cp-root {
   position: relative; width: 100%; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
-  background: #fff; color: maroon;
+  background: #fff; color: #000;
 }
 .cp-fixed { flex: 0 0 auto; position: relative; z-index: 5; }
 .cp-fixed .topbar { position: relative !important; }
@@ -80,18 +81,18 @@ const css = `
   grid-template-columns: 1fr auto auto;
   grid-template-areas: "label data button" "title data button";
   column-gap: 24px; align-items: start;
-  padding: 18px 40px 22px; color: maroon;
+  padding: 18px 40px 22px; color: #000;
 }
 .cp-head .cp-label { grid-area: label; font-size: 14px; font-weight: 700; letter-spacing: .12em; opacity: .75; }
 .cp-head h2 { grid-area: title; margin: 4px 0 0; font-size: clamp(32px, 5vw, 56px); line-height: .95; font-weight: 400; }
 .cp-head .cp-data { grid-area: data; font-size: 10px; line-height: 1.7; letter-spacing: .08em; opacity: .7; }
 .cp-head button {
   grid-area: button;
-  background: #fff; color: maroon; border: 1px solid maroon; padding: 10px 16px;
+  background: #fff; color: #000; border: 1px solid #000; padding: 10px 16px;
   font-size: 11px; letter-spacing: .08em; cursor: pointer;
   transition: transform .25s ease, background .25s ease;
 }
-.cp-head button:hover { transform: translateX(-4px); background: #f7efef; }
+.cp-head button:hover { transform: translateX(-4px); background: #f5f5f5; }
 .cp-scroll {
   flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden;
   padding: 14px 40px 90px;
@@ -107,59 +108,59 @@ const css = `
 .cp-rows { display: flex; flex-direction: column; gap: 14px; }
 .cp-row {
   display: flex; gap: 16px; align-items: center;
-  background: #fff; border: 1px solid rgba(128,0,0,.18);
+  background: #fff; border: 1px solid rgba(0,0,0,.18);
   padding: 12px; cursor: pointer; transition: background .2s, border-color .2s, transform .2s;
   animation: cp-rise .5s cubic-bezier(.2,.8,.2,1) both;
 }
-.cp-row:hover { background: #f7efef; border-color: maroon; }
-.cp-row.cp-selected { background: rgba(0,128,0,.06); border-color: green; }
+.cp-row:hover { background: #f5f5f5; border-color: #000; }
+.cp-row.cp-selected { background: rgba(0,0,0,.06); border-color: #000; }
 .cp-row-img {
   width: 84px; height: 100px; flex-shrink: 0; display: grid; place-items: center;
-  background: #f2ede6; overflow: hidden;
+  background: #f5f5f5; overflow: hidden;
 }
 .cp-row-img img { width: 78%; height: 78%; object-fit: contain; }
-.cp-row-body { flex: 1; min-width: 0; color: maroon; }
+.cp-row-body { flex: 1; min-width: 0; color: #000; }
 .cp-row-name { font-size: 14px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }
 .cp-row-meta { font-size: 10px; opacity: .7; letter-spacing: .06em; margin-top: 4px; }
-.cp-row-price { font-size: 13px; font-weight: 700; margin-top: 6px; color: green; }
+.cp-row-price { font-size: 13px; font-weight: 700; margin-top: 6px; color: #000; }
 .cp-row-remove {
-  background: transparent; border: 1px solid rgba(128,0,0,.3); color: maroon; width: 28px; height: 28px;
+  background: transparent; border: 1px solid rgba(0,0,0,.3); color: #000; width: 28px; height: 28px;
   cursor: pointer; font-size: 14px; opacity: .6; transition: opacity .15s, background .15s, color .15s;
 }
-.cp-row-remove:hover { opacity: 1; background: maroon; color: #fff; }
+.cp-row-remove:hover { opacity: 1; background: #000; color: #fff; }
 .cp-panel {
-  position: sticky; top: 14px; background: #fff; border: 1px solid maroon;
-  padding: 20px; color: maroon; animation: cp-rise .6s cubic-bezier(.2,.8,.2,1) both;
+  position: sticky; top: 14px; background: #fff; border: 1px solid #000;
+  padding: 20px; color: #000; animation: cp-rise .6s cubic-bezier(.2,.8,.2,1) both;
 }
 .cp-panel-img {
   width: 100%; aspect-ratio: 4/5; display: grid; place-items: center;
-  background: #f2ede6; margin-bottom: 16px; overflow: hidden;
+  background: #f5f5f5; margin-bottom: 16px; overflow: hidden;
 }
 .cp-panel-img img { width: 78%; height: 78%; object-fit: contain; }
 .cp-panel-name { font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
 .cp-panel-meta { font-size: 10px; opacity: .7; letter-spacing: .06em; margin-top: 4px; }
-.cp-panel-total { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(128,0,0,.2); font-size: 12px; letter-spacing: .08em; }
-.cp-panel-total b { font-size: 18px; color: green; }
+.cp-panel-total { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 12px; border-top: 1px solid rgba(0,0,0,.2); font-size: 12px; letter-spacing: .08em; }
+.cp-panel-total b { font-size: 18px; color: #000; }
 .cp-email { margin-top: 14px; }
 .cp-email label { display: block; font-size: 9px; letter-spacing: .14em; text-transform: uppercase; opacity: .7; margin-bottom: 6px; }
 .cp-email input {
-  width: 100%; border: 1px solid maroon; background: #fff; color: maroon;
+  width: 100%; border: 1px solid #000; background: #fff; color: #000;
   padding: 10px 12px; font-size: 12px; outline: none;
 }
-.cp-email input:focus { border-color: green; }
+.cp-email input:focus { border-color: #000; }
 .cp-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
 .cp-buy {
-  background: maroon; color: #fff; border: 1px solid maroon; padding: 14px 16px; font-size: 12px; font-weight: 700;
+  background: #000; color: #fff; border: 1px solid #000; padding: 14px 16px; font-size: 12px; font-weight: 700;
   letter-spacing: .1em; cursor: pointer; transition: transform .2s, background .2s;
 }
-.cp-buy:hover { background: #6d0000; transform: translateY(-2px); }
+.cp-buy:hover { background: #222; transform: translateY(-2px); }
 .cp-chat {
-  background: transparent; color: maroon; border: 1px solid maroon; padding: 12px 16px;
+  background: transparent; color: #000; border: 1px solid #000; padding: 12px 16px;
   font-size: 11px; letter-spacing: .1em; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
   transition: background .2s, color .2s;
 }
-.cp-chat:hover { background: #f7efef; }
-.cp-empty { text-align: center; color: maroon; padding: 60px 20px; opacity: .7; font-size: 12px; letter-spacing: .08em; }
+.cp-chat:hover { background: #f5f5f5; }
+.cp-empty { text-align: center; color: #000; padding: 60px 20px; opacity: .7; font-size: 12px; letter-spacing: .08em; }
 @keyframes cp-rise { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
 @media (max-width: 600px) {
   .cp-head {
@@ -171,7 +172,7 @@ const css = `
   .cp-head h2 { font-size: 32px; }
   .cp-head .cp-data { font-size: 9px; margin-top: 6px; }
   .cp-head button { padding: 8px 12px; font-size: 10px; }
-  .cp-scroll { padding: 10px 16px 80px; }
+  .cp-scroll { padding: 10px 16px 140px; }
   .cp-row { gap: 10px; padding: 8px; }
   .cp-row-img { width: 64px; height: 78px; }
   .cp-row-name { font-size: 12px; }
@@ -233,15 +234,23 @@ export default function CartPage(props: CartPageProps) {
             </button>
           </div>
         </header>
-        {menuOpen && (
-          <nav className="mobile-nav">
-            <a onClick={() => go("landing")} style={{ cursor: "pointer" }}>New-Arrival</a>
-            <a onClick={() => go("jerseys")} style={{ cursor: "pointer" }}>All-Kits</a>
-            <a onClick={() => go("bestsellers")} style={{ cursor: "pointer" }}>Best-Sellers</a>
-            <a onClick={() => go("retro")} style={{ cursor: "pointer" }}>Retro</a>
-            <a onClick={() => { onProfileClick?.(); setMenuOpen(false); }} style={{ cursor: "pointer" }}>PROFILE</a>
-          </nav>
-        )}
+        <MobileNav
+          menuOpen={menuOpen} setMenuOpen={setMenuOpen} cartCount={cartCount}
+          onHome={() => go("landing")}
+          onKits={() => go("jerseys")}
+          onCart={() => setMenuOpen(false)}
+          onProfile={() => { onProfileClick?.(); setMenuOpen(false); }}
+          onBestSellers={() => go("bestsellers")}
+          onRetro={() => go("retro")}
+        />
+        <BottomNav
+          active="cart"
+          cartCount={cartCount}
+          onHome={() => go("landing")}
+          onKits={() => go("jerseys")}
+          onCart={() => setMenuOpen(false)}
+          onProfile={() => { onProfileClick?.(); setMenuOpen(false); }}
+        />
         <div className="cp-head">
         <span className="cp-label">[ YOUR CART ]</span>
         <button onClick={onBack}>← CONTINUE SHOPPING</button>
@@ -271,7 +280,7 @@ export default function CartPage(props: CartPageProps) {
                   onClick={() => setSelected(i)}
                 >
                   <div className="cp-row-img">
-                    {resolveImage(item) ? <img src={resolveImage(item)} alt={item.name} /> : <span style={{ color: "rgba(128,0,0,.35)", fontSize: 24 }}>Jersey</span>}
+                    {resolveImage(item) ? <img src={resolveImage(item)} alt={item.name} /> : <span style={{ color: "rgba(0,0,0,.35)", fontSize: 24 }}>Jersey</span>}
                   </div>
                   <div className="cp-row-body">
                     <div className="cp-row-name">{item.name}</div>
@@ -287,7 +296,7 @@ export default function CartPage(props: CartPageProps) {
               {selectedItem && (
                 <>
                   <div className="cp-panel-img">
-                    {resolveImage(selectedItem) ? <img src={resolveImage(selectedItem)} alt={selectedItem.name} /> : <span style={{ color: "rgba(128,0,0,.35)" }}>Jersey</span>}
+                    {resolveImage(selectedItem) ? <img src={resolveImage(selectedItem)} alt={selectedItem.name} /> : <span style={{ color: "rgba(0,0,0,.35)" }}>Jersey</span>}
                   </div>
                   <div className="cp-panel-name">{selectedItem.name}</div>
                   <div className="cp-panel-meta">Size {selectedItem.size} · Qty {selectedItem.qty} · {selectedItem.delivery === "delivery" ? "Delivery" : "Pick up"}</div>
@@ -323,7 +332,7 @@ export default function CartPage(props: CartPageProps) {
             <button className="checkout-close" onClick={() => setChatOpen(false)}>×</button>
             <h2 className="checkout-title">Chat Support</h2>
             <p className="checkout-note" style={{ opacity: .7, fontSize: 11, marginBottom: 12 }}>Ask us anything about your order.</p>
-            <div style={{ maxHeight: 200, overflowY: "auto", marginBottom: 12, padding: 8, background: "rgba(128,0,0,.05)", fontSize: 11, color: "maroon" }}>
+            <div style={{ maxHeight: 200, overflowY: "auto", marginBottom: 12, padding: 8, background: "rgba(0,0,0,.05)", fontSize: 11, color: "#000" }}>
               <p style={{ opacity: .6 }}>Support: Hi! How can we help with your {selectedItem?.name}?</p>
             </div>
             <div style={{ display: "flex", gap: 8 }}>

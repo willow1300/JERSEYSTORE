@@ -22,7 +22,7 @@ const SEASON_MESSAGES = [
   '[ AUTHENTIC + RETRO ] [ ALL LEAGUES ]',
   '[ DELIVERY ] [ PAY WITH M-PESA ]',
 ]
-const PRELOADER_ENABLED = true       // logo + counter + curtain on first visit
+const PRELOADER_ENABLED = false      // logo + counter + curtain on first visit (disabled: go straight to the site)
 const PRELOADER_MIN_SECONDS = 1.0    // shortest time the preloader stays up
 const CURSOR_ENABLED = false         // lens cursor removed (caused lag)
 const VELOCITY_SKEW_ENABLED = true   // cards lean slightly with scroll speed
@@ -185,7 +185,7 @@ export function useLandingMotion(active: boolean) {
     heroTl.fromTo(q('.campaign-title h1'), { y: 60, opacity: 0, clipPath: 'inset(100% 0 0 0)', filter: 'blur(10px)' }, { y: 0, opacity: 1, clipPath: 'inset(0% 0 0 0)', filter: 'blur(0px)', duration: 1.3, clearProps: CLEAR }, 0.2)
     heroTl.fromTo(q('.specs span'), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, clearProps: CLEAR }, 0.6)
     heroTl.fromTo(q('.buy-lockup'), { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, clearProps: CLEAR }, 0.75)
-    heroTl.fromTo(q('.hero-player'), { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 1.4, clearProps: 'clipPath' }, 0.2)
+    heroTl.fromTo(q('.hero-player-stage'), { y: 70, scale: 1.14, opacity: 0, filter: 'blur(14px) drop-shadow(0 22px 40px rgba(0,0,0,.28))' }, { y: 0, scale: 1, opacity: 1, filter: 'blur(0px) drop-shadow(0 22px 40px rgba(0,0,0,.28))', duration: 1.5, ease: 'expo.out', clearProps: 'opacity,filter,transform' }, 0.25)
     heroTl.fromTo(q('.preview-stack figure'), { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, stagger: 0.14, clearProps: CLEAR }, 0.5)
     if (slideCount) heroTl.fromTo(slideCount, { opacity: 0 }, { opacity: 1, duration: 0.8, clearProps: CLEAR }, 1)
     if (socials) heroTl.fromTo(socials, { opacity: 0 }, { opacity: 1, duration: 0.8, clearProps: CLEAR }, 1)
@@ -194,6 +194,18 @@ export function useLandingMotion(active: boolean) {
       if (priceNode) scrambleTo(priceNode, priceOriginal)
       introDone = true
       if (campaignInView && !document.hidden) startSeasonRotation()
+
+      // idle float for the hero photo + slow breathing spotlight
+      const stageEl = store.querySelector('.hero-player-stage') as HTMLElement | null
+      if (stageEl) {
+        const float = gsap.fromTo(stageEl, { y: 0 }, { y: 11, duration: 2.7, ease: 'sine.inOut', yoyo: true, repeat: -1 })
+        cleanups.push(() => float.kill())
+      }
+      const wash = store.querySelector('.blue-wash') as HTMLElement | null
+      if (wash) {
+        const washPulse = gsap.to(wash, { scale: 1.06, duration: 3.6, ease: 'sine.inOut', yoyo: true, repeat: -1 })
+        cleanups.push(() => washPulse.kill())
+      }
     })
 
     /* ── 5. Preloader: logo + real image-load counter + curtain wipe ── */
@@ -291,7 +303,7 @@ export function useLandingMotion(active: boolean) {
     })
     if (campaignEl) {
       parallaxTl.to(q('.campaign-title'), { yPercent: -40, opacity: 0, ease: 'none' }, 0)
-      parallaxTl.to(q('.hero-player'), { yPercent: 25, ease: 'none' }, 0)
+      parallaxTl.to(q('.hero-player'), { yPercent: 22, scale: 1.05, ease: 'none' }, 0)
       parallaxTl.to(q('.preview-stack'), { yPercent: -25, ease: 'none' }, 0)
       parallaxTl.to(q('.campaign-bg'), { scale: 1.14, ease: 'none' }, 0)
     }
@@ -448,6 +460,9 @@ export function useLandingMotion(active: boolean) {
       if (campaignEl && (player || previews)) {
         const px = player ? gsap.quickTo(player, 'x', { duration: 1, ease: 'power3' }) : null
         const py = player ? gsap.quickTo(player, 'y', { duration: 1, ease: 'power3' }) : null
+        const rX = player ? gsap.quickTo(player, 'rotationX', { duration: 1, ease: 'power3' }) : null
+        const rY = player ? gsap.quickTo(player, 'rotationY', { duration: 1, ease: 'power3' }) : null
+        if (player) gsap.set(player, { transformPerspective: 900 })
         const vx = previews ? gsap.quickTo(previews, 'x', { duration: 1, ease: 'power3' }) : null
         const vy = previews ? gsap.quickTo(previews, 'y', { duration: 1, ease: 'power3' }) : null
         const move = (e: PointerEvent) => {
@@ -455,10 +470,11 @@ export function useLandingMotion(active: boolean) {
           const r = campaignEl.getBoundingClientRect()
           const nx = (e.clientX - r.left) / r.width - 0.5
           const ny = (e.clientY - r.top) / r.height - 0.5
-          px?.(nx * -26); py?.(ny * -14)
+          px?.(nx * -30); py?.(ny * -16)
+          rX?.(ny * -6); rY?.(nx * 8)
           vx?.(nx * 20); vy?.(ny * 12)
         }
-        const leave = () => { px?.(0); py?.(0); vx?.(0); vy?.(0) }
+        const leave = () => { px?.(0); py?.(0); rX?.(0); rY?.(0); vx?.(0); vy?.(0) }
         campaignEl.addEventListener('pointermove', move)
         campaignEl.addEventListener('pointerleave', leave)
         undo.push(() => {
@@ -470,52 +486,29 @@ export function useLandingMotion(active: boolean) {
       return () => undo.forEach((fn) => fn())
     })
 
-    /* ── 10. Manifesto ── */
+    /* ── 10. Join the Inner Circle ── */
     mm.add('(min-width: 900px)', () => {
-      const section = store.querySelector('.manifesto') as HTMLElement | null
+      const section = store.querySelector('.inner-circle') as HTMLElement | null
       if (!section) return
+      const card = section.querySelector('.ic-card') as HTMLElement | null
+      if (!card) return
 
-      const bg = section.querySelector(':scope > img:first-child') as HTMLElement | null
-      const tagWall = section.querySelector('.tag-wall') as HTMLElement | null
-      const player = section.querySelector('.manifesto-player') as HTMLElement | null
-      const note = section.querySelector('.manifesto-note') as HTMLElement | null
-      const heading = section.querySelector('h2') as HTMLElement | null
-      const peak = section.querySelector('.peak-note') as HTMLElement | null
-      const barcode = section.querySelector('.barcode') as HTMLElement | null
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          start: () => (section.offsetHeight > window.innerHeight ? 'bottom bottom' : 'top top'),
-          end: '+=130%',
-          pin: true,
-          scrub: 1,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
+      const tween = gsap.fromTo(card, { y: 48, opacity: 0 }, {
+        y: 0, opacity: 1, duration: 1, ease: 'expo.out', clearProps: 'transform,opacity',
+        scrollTrigger: { trigger: section, start: 'top 75%' },
       })
-
-      if (bg) tl.fromTo(bg, { scale: 1.18 }, { scale: 1, ease: 'none' }, 0)
-      if (tagWall) tl.to(tagWall, { xPercent: -18, ease: 'none' }, 0)
-      if (player) tl.to(player, { scale: 1.1, ease: 'none' }, 0)
-      if (note) tl.fromTo(note, { y: 24, opacity: 0 }, { y: 0, opacity: 1, ease: 'none' }, 0.15)
-      if (heading) tl.fromTo(heading, { clipPath: 'inset(100% 0 0 0)', y: 40 }, { clipPath: 'inset(0% 0 0 0)', y: 0, ease: 'none' }, 0.25)
-      if (peak) tl.fromTo(peak, { y: 24, opacity: 0 }, { y: 0, opacity: 1, ease: 'none' }, 0.4)
-      if (barcode) tl.fromTo(barcode, { opacity: 0 }, { opacity: 1, ease: 'none' }, 0.5)
-
-      return () => {
-        if (tl.scrollTrigger) tl.scrollTrigger.kill()
-        tl.kill()
-      }
+      return () => { tween.scrollTrigger?.kill(); tween.kill() }
     })
 
     mm.add('(max-width: 899px)', () => {
-      const section = store.querySelector('.manifesto') as HTMLElement | null
+      const section = store.querySelector('.inner-circle') as HTMLElement | null
       if (!section) return
-      const targets = section.querySelectorAll('.tag-wall, .manifesto-player, .manifesto-note, h2, .peak-note, .barcode')
-      const tween = gsap.fromTo(targets, { y: 24, opacity: 0 }, {
-        y: 0, opacity: 1, duration: 0.9, stagger: 0.08, ease: 'expo.out', clearProps: 'transform,opacity',
-        scrollTrigger: { trigger: section, start: 'top 80%' },
+      const card = section.querySelector('.ic-card') as HTMLElement | null
+      if (!card) return
+
+      const tween = gsap.fromTo(card, { y: 32, opacity: 0 }, {
+        y: 0, opacity: 1, duration: 0.8, ease: 'expo.out', clearProps: 'transform,opacity',
+        scrollTrigger: { trigger: section, start: 'top 85%' },
       })
       return () => { tween.scrollTrigger?.kill(); tween.kill() }
     })

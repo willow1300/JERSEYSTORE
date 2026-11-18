@@ -5,6 +5,7 @@ import BestSellers from './BestSellers'
 import CartPage from './CartPage'
 import ProductPage from './ProductPage'
 import CheckoutPage from './CheckoutPage'
+import MobileNav, { BottomNav } from './MobileNav'
 import type { Product } from '../data/types'
 import { useLandingMotion } from '../utils/landingMotion'
 import { WHATSAPP_LINK, CART_STORAGE_KEY, CART_EXPIRY_HOURS } from '../utils/constants'
@@ -22,6 +23,10 @@ function Icon({ name, size = 17 }: { name: 'arrow' | 'bag' | 'menu' | 'profile' 
     heart: <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />,
   }
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]}</svg>
+}
+
+function WaIcon({ size = 20 }: { size?: number }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 }
 
 // WhatsApp enquiries link lives in src/utils/constants.ts (configured via .env.local)
@@ -57,6 +62,18 @@ function ArrivalCard({ item, onOpen }: { item: Kit; onOpen: (p: Product) => void
   )
 }
 
+// Pair of chevrons that loops-nudges sideways to hint the carousel scrolls;
+// the animation is driven by .na-rows-hinting in index.css.
+function NaHintIco({ dir }: { dir: 'l' | 'r' }) {
+  const d = dir === 'l' ? 'M15 5l-7 7 7 7' : 'M9 5l7 7-7 7';
+  return (
+    <span className="na-hint-ico" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>
+    </span>
+  )
+}
+
 function LandingPage({
   menuOpen, setMenuOpen, cartCount, setCartCount,
   filterOpen, setFilterOpen, tone, setTone,
@@ -84,6 +101,14 @@ function LandingPage({
     const step = card ? (card.offsetWidth + 24) : 480;
     el.scrollBy({ left: dir * step, behavior: 'smooth' });
   };
+
+  // animated left/right scroll hint on the NEW ARRIVAL carousel: the arrows
+  // slide toward each other and blink, and a sweeping "‹ SCROLL ›" badge glides
+  // over the top row from the moment the page renders. The hint only stops once
+  // the user scrolls or clicks the carousel themselves.
+  const [naHint, setNaHint] = useState(true);
+  const dismissHint = () => setNaHint(false);
+  const arrowClick = (dir: -1 | 1, which: 1 | 2) => { scrollNa(dir, which); dismissHint(); };
 
   useEffect(() => {
     for (let i = 1; i <= 7; i++) {
@@ -118,13 +143,23 @@ function LandingPage({
         </div>
       </header>
 
-      {menuOpen && <nav className="mobile-nav">
-  <a onClick={() => { setPage('landing'); setMenuOpen(false); }} style={{ cursor: 'pointer' }}>New-Arrival</a>
-  <a onClick={() => { setPage('jerseys'); setMenuOpen(false); }} style={{ cursor: 'pointer' }}>All-Kits</a>
-  <a onClick={() => { setPage('bestsellers'); setMenuOpen(false); }} style={{ cursor: 'pointer' }}>Best-Sellers</a>
-  <a onClick={() => { setPage('retro'); setMenuOpen(false); }} style={{ cursor: 'pointer' }}>Retro</a>
-  <a onClick={() => { onProfileClick(); setMenuOpen(false); }} style={{ cursor: 'pointer' }}>PROFILE</a>
-</nav>}
+      <MobileNav
+        menuOpen={menuOpen} setMenuOpen={setMenuOpen} cartCount={cartCount}
+        onHome={() => { setPage('landing'); setMenuOpen(false); }}
+        onKits={() => { setPage('jerseys'); setMenuOpen(false); }}
+        onCart={() => { setPage('cart'); setMenuOpen(false); }}
+        onProfile={() => { onProfileClick(); setMenuOpen(false); }}
+        onBestSellers={() => { setPage('bestsellers'); setMenuOpen(false); }}
+        onRetro={() => { setPage('retro'); setMenuOpen(false); }}
+      />
+      <BottomNav
+        active="home"
+        cartCount={cartCount}
+        onHome={() => { setPage('landing'); setMenuOpen(false); }}
+        onKits={() => { setPage('jerseys'); setMenuOpen(false); }}
+        onCart={() => { setPage('cart'); setMenuOpen(false); }}
+        onProfile={() => { onProfileClick(); setMenuOpen(false); }}
+      />
 
       <main id="top">
         <section className="campaign" id="drop">
@@ -139,7 +174,9 @@ function LandingPage({
               </div>
               <div className="hero-tags">[ ALL LEAGUES ]<br />[ AUTHENTIC + RETRO ]<br />[ DELIVERY ]</div>
             </div>
-            <img className="hero-player" src="/images/hero/NewHero.jpg" alt="Hero player" />
+            <div className="hero-player-stage">
+              <img className="hero-player" src="/images/hero/NewHero.jpg" alt="Hero player" />
+            </div>
             <div className="preview-stack">
               {[gangImages[0], gangImages[1]].map((img, i) => (
                 <figure key={img}>
@@ -160,39 +197,110 @@ function LandingPage({
               {arrivals.length === 0 && (
                 <div className="ak-empty">[ LOADING LATEST KITS… ]</div>
               )}
-              <div className="na-row" hidden={arrivals.length === 0}>
-                <button className="na-arrow na-arrow-left" onClick={() => scrollNa(-1, 1)} aria-label="Previous arrivals (top row)">‹</button>
-                <div className="na-track" ref={naRef}>
+              <div className={`na-row${naHint ? ' na-rows-hinting' : ''}`} hidden={arrivals.length === 0}>
+                {naHint && (
+                  <div className="na-swipe-hint" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
+                    <span>SCROLL</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5l7 7-7 7" /></svg>
+                  </div>
+                )}
+                <button className="na-arrow na-arrow-left" onClick={() => arrowClick(-1, 1)} aria-label="Previous arrivals (top row)"><NaHintIco dir="l" /></button>
+                <div className="na-track" ref={naRef} onScroll={dismissHint}>
                   {arrivals.slice(0, Math.ceil(arrivals.length / 2)).map((item) => <ArrivalCard key={item.id} item={item} onOpen={onSelectProduct} />)}
                 </div>
-                <button className="na-arrow na-arrow-right" onClick={() => scrollNa(1, 1)} aria-label="More arrivals (top row)">›</button>
+                <button className="na-arrow na-arrow-right" onClick={() => arrowClick(1, 1)} aria-label="More arrivals (top row)"><NaHintIco dir="r" /></button>
               </div>
-              <div className="na-row" hidden={arrivals.length === 0}>
-                <button className="na-arrow na-arrow-left" onClick={() => scrollNa(-1, 2)} aria-label="Previous arrivals (bottom row)">‹</button>
-                <div className="na-track" ref={naRef2}>
+              <div className={`na-row${naHint ? ' na-rows-hinting' : ''}`} hidden={arrivals.length === 0}>
+                <button className="na-arrow na-arrow-left" onClick={() => arrowClick(-1, 2)} aria-label="Previous arrivals (bottom row)"><NaHintIco dir="l" /></button>
+                <div className="na-track" ref={naRef2} onScroll={dismissHint}>
                   {arrivals.slice(Math.ceil(arrivals.length / 2)).map((item) => <ArrivalCard key={item.id} item={item} onOpen={onSelectProduct} />)}
                 </div>
-                <button className="na-arrow na-arrow-right" onClick={() => scrollNa(1, 2)} aria-label="More arrivals (bottom row)">›</button>
+                <button className="na-arrow na-arrow-right" onClick={() => arrowClick(1, 2)} aria-label="More arrivals (bottom row)"><NaHintIco dir="r" /></button>
               </div>
             </div>
           </section>
 
-          <section className="manifesto" id="story">
-            <img src="https://images.unsplash.com/photo-1549494592-af5ed0eadf2a?auto=format&fit=crop&w=1600&q=92" alt="A steep snow-covered mountain" />
-            <img className="manifesto-player" src="/images/legacy/travis-scott.png" alt="" />
-            <div className="manifesto-wash" />
-            <div className="tag-wall" aria-hidden="true">FULLTIME</div>
-            <p className="manifesto-note">GOOD KITS WERE NEVER<br />MADE TO STAY FOLDED.<br />WE SOURCE SHIRTS<br />WITH A PAST.</p>
-            <h2>BUILT FOR THE TERRACE.<br />MADE FOR THE CITY.<br />FORGED TO LAST.</h2>
-            <div className="peak-note">FOR THOSE WHO<br />SHOW UP. HOME<br />OR AWAY.</div>
-            <div className="barcode" aria-label="Full Time Supply Company">|||| || ||| ||||| ||</div>
+          <section className="inner-circle" id="join">
+            <div className="ic-card">
+              <h2>Join the Inner Circle</h2>
+              <p>Get early access to new drops, exclusive offers, and style notes delivered to your WhatsApp.</p>
+              <a className="ic-btn" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
+                <WaIcon size={20} />
+                Join WhatsApp Broadcast
+              </a>
+            </div>
           </section>
         </main>
 
         <footer id="archive">
-          <div className="logo"><img src="/logos/mjerseyss_logo.svg" alt="MJ Erseys" /></div>
-          <p>INDEPENDENT FOOTBALL ARCHIVE<br />EST. 2026 / WORLDWIDE</p>
-          <div><a href="#shop">SHOP</a><a href="#story">STORY</a><a href="#top">TOP ↑</a></div>
+          <div className="footer-container">
+            <div className="footer-grid">
+              <div className="footer-brand-col">
+                <a className="footer-logo" href="#top">mj erseys</a>
+                <p className="footer-tagline">Authentic and retro football jerseys in Kenya. Shop vintage kits, new drops and everyday styles, delivered across Kenya and worldwide.</p>
+                <div className="footer-socials">
+                  <a className="footer-social-link" aria-label="Instagram" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r=".5" fill="currentColor" stroke="none"/></svg>
+                  </a>
+                  <a className="footer-social-link" aria-label="TikTok" href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                  </a>
+                  <a className="footer-social-link" aria-label="X" href="https://x.com/" target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 4l16 16"/><path d="M20 4L4 20"/></svg>
+                  </a>
+                  <a className="footer-social-link" aria-label="WhatsApp" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
+                    <WaIcon size={20} />
+                  </a>
+                </div>
+                <div className="footer-contact-list">
+                  <a className="footer-contact-item" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
+                    <WaIcon size={16} />
+                    Chat on WhatsApp
+                  </a>
+                  <div className="footer-contact-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Nairobi, Kenya
+                  </div>
+                </div>
+              </div>
+              <div className="footer-col">
+                <h4 className="footer-heading">Shop</h4>
+                <ul className="footer-list">
+                  <li><a className="footer-link" onClick={() => setPage('landing')}>New Arrivals</a></li>
+                  <li><a className="footer-link" onClick={() => setPage('jerseys')}>All Kits</a></li>
+                  <li><a className="footer-link" onClick={() => setPage('bestsellers')}>Best Sellers</a></li>
+                  <li><a className="footer-link" onClick={() => setPage('retro')}>Retro</a></li>
+                </ul>
+              </div>
+              <div className="footer-col">
+                <h4 className="footer-heading">Help</h4>
+                <ul className="footer-list">
+                  <li><a className="footer-link" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">Shipping &amp; Delivery</a></li>
+                  <li><a className="footer-link" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">Returns</a></li>
+                  <li><a className="footer-link" onClick={() => setPage('cart')}>Track Order</a></li>
+                  <li><a className="footer-link" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">FAQs</a></li>
+                </ul>
+              </div>
+              <div className="footer-col">
+                <h4 className="footer-heading">About</h4>
+                <ul className="footer-list">
+                  <li><a className="footer-link" href="#top">Our Story</a></li>
+                  <li><a className="footer-link" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">Contact Us</a></li>
+                  <li><a className="footer-link" href="https://maps.google.com/?q=Nairobi" target="_blank" rel="noopener noreferrer">Store Locator</a></li>
+                </ul>
+              </div>
+              <div className="footer-bottom">
+                <div className="footer-bottom-spacer" />
+                <p className="footer-copyright">© 2026 mjjerseys. All rights reserved.</p>
+                <div className="footer-bottom-links">
+                  <a role="button">Privacy Policy</a>
+                  <a role="button">Terms &amp; Conditions</a>
+                  <a role="button">Cookie Preferences</a>
+                </div>
+              </div>
+            </div>
+          </div>
         </footer>
     </>
   )
@@ -448,7 +556,7 @@ export default function App() {
               if (label === 'Retro') setPage('retro')
               setMenuOpen(false)
             }}
-            onCartClick={() => setMenuOpen(false)}
+            onCartClick={() => { setPage('cart'); setMenuOpen(false) }}
             onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
             onSelectKit={(kit) => openProduct(kit)}
             menuOpen={menuOpen}
@@ -464,7 +572,7 @@ export default function App() {
               if (label === 'Retro') setPage('retro')
               setMenuOpen(false)
             }}
-            onCartClick={() => setMenuOpen(false)}
+            onCartClick={() => { setPage('cart'); setMenuOpen(false) }}
             onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
             onSelectKit={(kit) => openProduct(kit)}
             menuOpen={menuOpen}
@@ -480,6 +588,7 @@ export default function App() {
               if (label === 'All-Kits') setPage('jerseys')
               if (label === 'Best-Sellers') setPage('bestsellers')
               if (label === 'Retro') setPage('retro')
+              if (label === 'cart') setPage('cart')
               setMenuOpen(false)
             }}
             onSelectProduct={openProduct}
@@ -516,7 +625,7 @@ export default function App() {
               if (label === 'Retro') setPage('retro')
               setMenuOpen(false)
             }}
-            onCartClick={() => setMenuOpen(false)}
+            onCartClick={() => { setPage('cart'); setMenuOpen(false) }}
             onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
             onSelectKit={(kit) => openProduct(kit)}
             menuOpen={menuOpen}
@@ -637,7 +746,7 @@ export default function App() {
           <div className="checkout-modal" onClick={(e) => e.stopPropagation()}>
             {orderSuccess ? (
               <div className="qa-success">
-                <div className="qa-success-check" style={{ background: '#4ade80', color: '#000' }}>✓</div>
+                <div className="qa-success-check" style={{ background: '#000', color: '#fff' }}>✓</div>
                 <h2 className="checkout-title" style={{ textAlign: 'center', marginBottom: 8 }}>Order Placed!</h2>
                 <p className="checkout-note" style={{ textAlign: 'center', opacity: 1, fontSize: 12 }}>
                   Thank you{userEmail ? `, ${userEmail}` : ''}. Your cart has been cleared.

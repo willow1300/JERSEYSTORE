@@ -21,7 +21,7 @@
   align-items: center;
   justify-content: center;
   background: #fff;
-  color: maroon;
+  color: #000;
   will-change: clip-path;
 }
 .lm-preloader-logo {
@@ -37,7 +37,7 @@
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 12px;
   letter-spacing: 0.14em;
-  color: maroon;
+  color: #000;
   opacity: 0.75;
 }
 .lm-preloader-count b {
@@ -49,17 +49,17 @@
   right: 0;
   bottom: 0;
   height: 3px;
-  background: maroon;
+  background: #000;
   transform: scaleX(0);
   transform-origin: 0 50%;
 }
 
-/* ───── Preloader exit: maroon panel sweeps up to reveal the page ───── */
+/* ───── Preloader exit: #000 panel sweeps up to reveal the page ───── */
 .lm-swipe {
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: maroon;
+  background: #000;
   will-change: transform;
   pointer-events: none;
 }

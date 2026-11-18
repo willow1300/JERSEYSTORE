@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchKits, getCachedKits, REMOTE_ENABLED, type Kit } from "../utils/kits";
+import MobileNav, { BottomNav } from "./MobileNav";
 
 /* ---------- Types ---------- */
 export type { Kit } from "../utils/kits";
@@ -131,20 +132,23 @@ const Jerseys: React.FC<JerseysProps> = ({
         setMenuOpen={setMenuOpen}
       />
 
-      {menuOpen && (
-        <nav className="mobile-nav">
-          {NAV_LINKS.map((label) => (
-            <a
-              key={label}
-              onClick={() => { onNavigate?.(label); setMenuOpen?.(false); }}
-              style={{ cursor: 'pointer' }}
-            >
-              {label.toUpperCase()}
-            </a>
-          ))}
-          <a onClick={() => { onProfileClick?.(); setMenuOpen?.(false); }} style={{ cursor: 'pointer' }}>PROFILE</a>
-        </nav>
-      )}
+      <MobileNav
+        menuOpen={menuOpen} setMenuOpen={setMenuOpen} cartCount={cartCount}
+        onHome={() => { onNavigate?.("New-Arrival"); setMenuOpen?.(false); }}
+        onKits={() => { onNavigate?.("All-Kits"); setMenuOpen?.(false); }}
+        onCart={() => onCartClick?.()}
+        onProfile={() => { onProfileClick?.(); setMenuOpen?.(false); }}
+        onBestSellers={() => { onNavigate?.("Best-Sellers"); setMenuOpen?.(false); }}
+        onRetro={() => { onNavigate?.("Retro"); setMenuOpen?.(false); }}
+      />
+      <BottomNav
+        active="kits"
+        cartCount={cartCount}
+        onHome={() => { onNavigate?.("New-Arrival"); setMenuOpen?.(false); }}
+        onKits={() => { onNavigate?.("All-Kits"); setMenuOpen?.(false); }}
+        onCart={() => onCartClick?.()}
+        onProfile={() => { onProfileClick?.(); setMenuOpen?.(false); }}
+      />
 
       <main className="ak-main">
         <div className="ak-head-row">

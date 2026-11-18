@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import type { Product } from "../data/types";
+import MobileNav, { BottomNav } from "./MobileNav";
 
 /* ---------- Types ---------- */
 export interface ProductPageProps {
@@ -172,14 +173,23 @@ const ProductPage: React.FC<ProductPageProps & { onSelectProduct?: (p: Product) 
     <div className="ak-page">
       <Header cartCount={cartCount} onNavigate={onNavigate} menuOpen={menuOpen} setMenuOpen={setMenuOpen} onHome={onHome} />
 
-      {menuOpen && (
-        <nav className="mobile-nav">
-          {NAV_LINKS.map((label) => (
-            <a key={label} onClick={() => { onNavigate?.(label); setMenuOpen?.(false); }} style={{ cursor: 'pointer' }}>{label.toUpperCase()}</a>
-          ))}
-          <a onClick={() => { onOpenAuth?.(); setMenuOpen?.(false); }} style={{ cursor: 'pointer' }}>PROFILE</a>
-        </nav>
-      )}
+      <MobileNav
+        menuOpen={menuOpen} setMenuOpen={setMenuOpen} cartCount={cartCount}
+        onHome={() => { onNavigate?.("New-Arrival"); setMenuOpen?.(false); }}
+        onKits={() => { onNavigate?.("All-Kits"); setMenuOpen?.(false); }}
+        onCart={() => { onNavigate?.("cart"); setMenuOpen?.(false); }}
+        onProfile={() => { onOpenAuth?.(); setMenuOpen?.(false); }}
+        onBestSellers={() => { onNavigate?.("Best-Sellers"); setMenuOpen?.(false); }}
+        onRetro={() => { onNavigate?.("Retro"); setMenuOpen?.(false); }}
+      />
+      <BottomNav
+        active="kits"
+        cartCount={cartCount}
+        onHome={() => { onNavigate?.("New-Arrival"); setMenuOpen?.(false); }}
+        onKits={() => { onNavigate?.("All-Kits"); setMenuOpen?.(false); }}
+        onCart={() => { onNavigate?.("cart"); setMenuOpen?.(false); }}
+        onProfile={() => { onOpenAuth?.(); setMenuOpen?.(false); }}
+      />
 
       <main className="ak-main pp-main">
         <div className="pp-crumb">
