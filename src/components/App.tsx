@@ -6,6 +6,7 @@ import CartPage from './CartPage'
 import ProductPage from './ProductPage'
 import CheckoutPage from './CheckoutPage'
 import MobileNav, { BottomNav } from './MobileNav'
+import SiteFooter from './SiteFooter'
 import type { Product } from '../data/types'
 import { useLandingMotion } from '../utils/landingMotion'
 import { WHATSAPP_LINK, CART_STORAGE_KEY, CART_EXPIRY_HOURS } from '../utils/constants'
@@ -232,76 +233,6 @@ function LandingPage({
             </div>
           </section>
         </main>
-
-        <footer id="archive">
-          <div className="footer-container">
-            <div className="footer-grid">
-              <div className="footer-brand-col">
-                <a className="footer-logo" href="#top">mj erseys</a>
-                <p className="footer-tagline">Authentic and retro football jerseys in Kenya. Shop vintage kits, new drops and everyday styles, delivered across Kenya and worldwide.</p>
-                <div className="footer-socials">
-                  <a className="footer-social-link" aria-label="Instagram" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r=".5" fill="currentColor" stroke="none"/></svg>
-                  </a>
-                  <a className="footer-social-link" aria-label="TikTok" href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer">
-                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
-                  </a>
-                  <a className="footer-social-link" aria-label="X" href="https://x.com/" target="_blank" rel="noopener noreferrer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 4l16 16"/><path d="M20 4L4 20"/></svg>
-                  </a>
-                  <a className="footer-social-link" aria-label="WhatsApp" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
-                    <WaIcon size={20} />
-                  </a>
-                </div>
-                <div className="footer-contact-list">
-                  <a className="footer-contact-item" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">
-                    <WaIcon size={16} />
-                    Chat on WhatsApp
-                  </a>
-                  <div className="footer-contact-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                    Nairobi, Kenya
-                  </div>
-                </div>
-              </div>
-              <div className="footer-col">
-                <h4 className="footer-heading">Shop</h4>
-                <ul className="footer-list">
-                  <li><a className="footer-link" onClick={() => setPage('landing')}>New Arrivals</a></li>
-                  <li><a className="footer-link" onClick={() => setPage('jerseys')}>All Kits</a></li>
-                  <li><a className="footer-link" onClick={() => setPage('bestsellers')}>Best Sellers</a></li>
-                  <li><a className="footer-link" onClick={() => setPage('retro')}>Retro</a></li>
-                </ul>
-              </div>
-              <div className="footer-col">
-                <h4 className="footer-heading">Help</h4>
-                <ul className="footer-list">
-                  <li><a className="footer-link" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">Shipping &amp; Delivery</a></li>
-                  <li><a className="footer-link" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">Returns</a></li>
-                  <li><a className="footer-link" onClick={() => setPage('cart')}>Track Order</a></li>
-                  <li><a className="footer-link" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">FAQs</a></li>
-                </ul>
-              </div>
-              <div className="footer-col">
-                <h4 className="footer-heading">About</h4>
-                <ul className="footer-list">
-                  <li><a className="footer-link" href="#top">Our Story</a></li>
-                  <li><a className="footer-link" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">Contact Us</a></li>
-                  <li><a className="footer-link" href="https://maps.google.com/?q=Nairobi" target="_blank" rel="noopener noreferrer">Store Locator</a></li>
-                </ul>
-              </div>
-              <div className="footer-bottom">
-                <div className="footer-bottom-spacer" />
-                <p className="footer-copyright">© 2026 mjjerseys. All rights reserved.</p>
-                <div className="footer-bottom-links">
-                  <a role="button">Privacy Policy</a>
-                  <a role="button">Terms &amp; Conditions</a>
-                  <a role="button">Cookie Preferences</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </footer>
     </>
   )
 }
@@ -632,6 +563,7 @@ export default function App() {
             setMenuOpen={setMenuOpen}
           />
         )}
+        <SiteFooter onNavigate={setPage} />
       </div>
       {pendingAdd && (
         <div className="checkout-overlay" onClick={() => setPendingAdd(null)}>

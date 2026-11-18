@@ -148,11 +148,6 @@ const ProductPage: React.FC<ProductPageProps & { onSelectProduct?: (p: Product) 
       <div className="ak-page">
         <Header cartCount={cartCount} onNavigate={onNavigate} menuOpen={menuOpen} setMenuOpen={setMenuOpen} onHome={onHome} />
         <main className="ak-main"><div className="ak-empty">[ PRODUCT NOT FOUND ]</div></main>
-        <footer>
-          <div className="logo"><img src="/logos/mjerseyss_logo.svg" alt="MJ Erseys" /></div>
-          <p>INDEPENDENT FOOTBALL ARCHIVE<br />EST. 2026 / WORLDWIDE</p>
-          <div><a href="#shop">SHOP</a><a href="#story">STORY</a><a href="#top">TOP ↑</a></div>
-        </footer>
       </div>
     );
   }
@@ -306,12 +301,6 @@ const ProductPage: React.FC<ProductPageProps & { onSelectProduct?: (p: Product) 
           <RelatedCarousel items={related} onOpen={(p) => onSelectProduct?.(p)} />
         </section>
       </main>
-
-      <footer>
-        <div className="logo"><img src="/logos/mjerseyss_logo.svg" alt="MJ Erseys" /></div>
-        <p>INDEPENDENT FOOTBALL ARCHIVE<br />EST. 2026 / WORLDWIDE</p>
-        <div><a href="#shop">SHOP</a><a href="#story">STORY</a><a href="#top">TOP ↑</a></div>
-      </footer>
     </div>
   );
 };

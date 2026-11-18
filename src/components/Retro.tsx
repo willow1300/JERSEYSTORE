@@ -209,12 +209,6 @@ const Retro: React.FC<RetroProps> = ({
           </div>
         )}
       </main>
-
-      <footer>
-        <div className="logo"><img src="/logos/mjerseyss_logo.svg" alt="MJ Erseys" /></div>
-        <p>INDEPENDENT FOOTBALL ARCHIVE<br />EST. 2026 / WORLDWIDE</p>
-        <div><a href="#shop">SHOP</a><a href="#story">STORY</a><a href="#top">TOP ↑</a></div>
-      </footer>
     </div>
   );
 };
