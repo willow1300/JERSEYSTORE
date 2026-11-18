@@ -17,10 +17,8 @@ ScrollTrigger.config({ ignoreMobileResize: true })
 
 /* ───────────── Easy-to-edit settings ───────────── */
 const SEASON_MESSAGES = [
-  '[ FOOTBALL CULTURE 25.1 ] [ SERIES 01 ]',
-  '[ 26/27 COLLECTION ] [ NEW DROP ]',
-  '[ AUTHENTIC + RETRO ] [ ALL LEAGUES ]',
-  '[ DELIVERY ] [ PAY WITH M-PESA ]',
+  '[ SERIES 01 ]',
+  '[ PAY WITH M-PESA ]',
 ]
 const PRELOADER_ENABLED = false      // logo + counter + curtain on first visit (disabled: go straight to the site)
 const PRELOADER_MIN_SECONDS = 1.0    // shortest time the preloader stays up

@@ -166,11 +166,11 @@ function LandingPage({
         <section className="campaign" id="drop">
             <img className="campaign-bg" src="https://images.unsplash.com/photo-1606484527234-71e5b89ffcc6?auto=format&fit=crop&w=1600&q=90" alt="" />
             <div className="blue-wash" />
-            <div className="season-code">[ FOOTBALL CULTURE 25.1 ] [ SERIES 01 ]</div>
+            <div className="season-code">[ SERIES 01 ]</div>
             <div className="campaign-title">
               <p>COLLECTION</p>
               <div className="buy-lockup">
-                <button onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })} aria-label="Shop collection"><Icon name="arrow" size={22} /></button>
+                <button onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })} aria-label="Shop collection"><Icon name="arrow" size={26} /></button>
                 <span>ADD TO KIT</span>
               </div>
               <div className="hero-tags">[ ALL LEAGUES ]<br />[ AUTHENTIC + RETRO ]<br />[ DELIVERY ]</div>
