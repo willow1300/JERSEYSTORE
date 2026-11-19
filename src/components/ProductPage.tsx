@@ -10,6 +10,7 @@ export interface ProductPageProps {
   onNavigate?: (label: string) => void;
   onHome?: () => void;
   onAddToCart?: (name: string, image: string, price: number, qty: number, size: string, delivery: 'delivery' | 'pickup') => void;
+  onQuickAdd?: (name: string, image?: string, price?: number) => void;
   wishlistIds?: string[];
   onToggleWishlist?: (p: Product) => void;
   onOpenAuth?: () => void;
@@ -48,19 +49,23 @@ const Header: React.FC<Pick<ProductPageProps, "cartCount" | "onNavigate" | "menu
 );
 
 /* ---------- Card used inside the related carousel ---------- */
-const RelatedCard: React.FC<{ item: Product; idx?: number; onOpen: (p: Product) => void }> = ({ item, idx = 0, onOpen }) => (
+const RelatedCard: React.FC<{ item: Product; idx?: number; onOpen: (p: Product) => void; onQuickAdd?: (name: string, image?: string, price?: number) => void }> = ({ item, idx = 0, onOpen, onQuickAdd }) => (
   <article className="na-card" style={{ animationDelay: `${Math.min(idx, 14) * 0.055}s` }}>
     <div className="na-image" onClick={() => onOpen(item)} role="button" tabIndex={0}>
       <img src={item.image} alt={item.name} loading="lazy" />
     </div>
     <h3 className="na-name">{item.name}</h3>
-    <p className="na-price">{formatPrice(item.price)}</p>
-    <button className="na-btn" onClick={() => onOpen(item)}>SELECT OPTION</button>
+    <div className="na-price-row">
+      <p className="na-price">{formatPrice(item.price)}</p>
+      <button className="na-cart-btn" onClick={() => (onQuickAdd ? onQuickAdd(item.name, item.image, item.price) : onOpen(item))} aria-label={`Add ${item.name} to cart`}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      </button>
+    </div>
   </article>
 );
 
 /* ---------- Single-row carousel for related products ---------- */
-const RelatedCarousel: React.FC<{ items: Product[]; onOpen: (p: Product) => void }> = ({ items, onOpen }) => {
+const RelatedCarousel: React.FC<{ items: Product[]; onOpen: (p: Product) => void; onQuickAdd?: (name: string, image?: string, price?: number) => void }> = ({ items, onOpen, onQuickAdd }) => {
   const topRef = useRef<HTMLDivElement>(null);
   const scroll = (dir: -1 | 1) => {
     const el = topRef.current;
@@ -77,7 +82,7 @@ const RelatedCarousel: React.FC<{ items: Product[]; onOpen: (p: Product) => void
       <div className="na-row">
         <button className="na-arrow na-arrow-left" onClick={() => scroll(-1)} aria-label="Scroll left">‹</button>
         <div className="na-track" ref={topRef}>
-          {items.map((p, i) => <RelatedCard key={p.id} item={p} idx={i} onOpen={onOpen} />)}
+          {items.map((p, i) => <RelatedCard key={p.id} item={p} idx={i} onOpen={onOpen} onQuickAdd={onQuickAdd} />)}
         </div>
         <button className="na-arrow na-arrow-right" onClick={() => scroll(1)} aria-label="Scroll right">›</button>
       </div>
@@ -93,6 +98,7 @@ const ProductPage: React.FC<ProductPageProps & { onSelectProduct?: (p: Product) 
   onNavigate,
   onHome,
   onAddToCart,
+  onQuickAdd,
   wishlistIds = [],
   onToggleWishlist,
   onOpenAuth,
@@ -298,7 +304,7 @@ const ProductPage: React.FC<ProductPageProps & { onSelectProduct?: (p: Product) 
 
         <section className="pp-related">
           <h2 className="pp-related-title">RELATED PRODUCTS</h2>
-          <RelatedCarousel items={related} onOpen={(p) => onSelectProduct?.(p)} />
+          <RelatedCarousel items={related} onOpen={(p) => onSelectProduct?.(p)} onQuickAdd={onQuickAdd} />
         </section>
       </main>
     </div>

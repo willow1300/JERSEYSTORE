@@ -441,6 +441,7 @@ export default function App() {
             onCartClick={() => { setPage('cart'); setMenuOpen(false) }}
             onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
             onSelectKit={(kit) => openProduct(kit)}
+            onAdd={requestAdd}
             menuOpen={menuOpen}
             setMenuOpen={setMenuOpen}
           />
@@ -457,6 +458,7 @@ export default function App() {
             onCartClick={() => { setPage('cart'); setMenuOpen(false) }}
             onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
             onSelectKit={(kit) => openProduct(kit)}
+            onAdd={requestAdd}
             menuOpen={menuOpen}
             setMenuOpen={setMenuOpen}
           />
@@ -475,6 +477,7 @@ export default function App() {
             }}
             onSelectProduct={openProduct}
             onAddToCart={addToCartFromDetail}
+            onQuickAdd={requestAdd}
             wishlistIds={wishlist}
             onToggleWishlist={toggleWishlist}
             onOpenAuth={() => setAuthOpen(true)}
@@ -510,6 +513,7 @@ export default function App() {
             onCartClick={() => { setPage('cart'); setMenuOpen(false) }}
             onProfileClick={() => { setAuthOpen(true); setMenuOpen(false); }}
             onSelectKit={(kit) => openProduct(kit)}
+            onAdd={requestAdd}
             menuOpen={menuOpen}
             setMenuOpen={setMenuOpen}
           />

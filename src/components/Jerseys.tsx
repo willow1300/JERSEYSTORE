@@ -67,22 +67,23 @@ const Header: React.FC<Pick<JerseysProps, "cartCount" | "onNavigate" | "onCartCl
 );
 
 const AllKitCard: React.FC<{ kit: Kit; idx?: number; onSelect?: (kit: Kit) => void; onAdd?: (name: string, image?: string, price?: number) => void }> = ({ kit, idx = 0, onSelect, onAdd }) => {
-  const handle = () => {
-    if (!kit.inStock) { onSelect?.(kit); return }
-    onAdd?.(kit.name, kit.image, kit.price);
-    onSelect?.(kit);
+  const quickAdd = () => {
+    if (onAdd) onAdd(kit.name, kit.image, kit.price);
+    else onSelect?.(kit);
   };
   return (
     <article className={`na-card ${kit.inStock ? '' : 'is-out'}`.trim()} style={{ animationDelay: `${Math.min(idx, 14) * 0.055}s` }}>
-      <div className="na-image" onClick={handle} role="button" tabIndex={0}>
+      <div className="na-image" onClick={() => onSelect?.(kit)} role="button" tabIndex={0}>
         <img src={kit.image} alt={kit.name} loading="lazy" />
         {!kit.inStock && <span className="na-stock">SOLD OUT</span>}
       </div>
       <h3 className="na-name">{kit.name}</h3>
-      <p className="na-price">{formatPrice(kit.price)}</p>
-      <button className="na-btn" onClick={handle} disabled={!kit.inStock}>
-        {kit.inStock ? 'SELECT OPTION' : 'NOT IN STOCK'}
-      </button>
+      <div className="na-price-row">
+        <p className="na-price">{formatPrice(kit.price)}</p>
+        <button className="na-cart-btn" onClick={quickAdd} disabled={!kit.inStock} aria-label={`Add ${kit.name} to cart`}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        </button>
+      </div>
     </article>
   );
 };
