@@ -115,7 +115,7 @@ function LandingPage({
   return (
     <>
       <header className="topbar">
-        <a className="logo" href="#top"><img src="/logos/mjerseyss_logo.svg" alt="MJ Erseys" /></a>
+        <a className="logo" href="#top"><img src="/logos/mjerseyss_logo.svg" alt="mjerseyss" /></a>
         <nav>
           <a onClick={() => setPage('landing')}>NEW-ARRIVAL</a>
           <a onClick={() => setPage('jerseys')}>ALL-KITS</a>

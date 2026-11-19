@@ -215,7 +215,7 @@ export default function CartPage(props: CartPageProps) {
       <div className="cp-fixed">
         <header className="topbar">
           <a className="logo" href="#top" onClick={(e) => { e.preventDefault(); go("landing"); }}>
-            <img src="/logos/mjerseyss_logo.svg" alt="MJ Erseys" />
+            <img src="/logos/mjerseyss_logo.svg" alt="mjerseyss" />
           </a>
           <nav>
             <a onClick={() => go("landing")} style={{ cursor: "pointer" }}>NEW-ARRIVAL</a>

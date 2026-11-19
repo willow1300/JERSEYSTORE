@@ -7,7 +7,7 @@ import {
   getCachedDeliveryZones,
   type DeliveryZone,
 } from "../utils/delivery";
-import { WHATSAPP_NUMBER } from "../utils/constants";
+import { WHATSAPP_NUMBER, WHATSAPP_ORDER_TEXT } from "../utils/constants";
 import { ORDERS_ENABLED, submitOrder } from "../utils/orders";
 import MobileNav, { BottomNav } from "./MobileNav";
 
@@ -44,7 +44,7 @@ const Header: React.FC<Pick<CheckoutPageProps, "cartCount" | "onNavigate" | "onP
   setMenuOpen,
 }) => (
   <header className="topbar">
-    <a className="logo" href="#top" aria-label="MJ home" onClick={() => onNavigate?.('New-Arrival')} style={{ cursor: 'pointer' }}><img src="/logos/mjerseyss_logo.svg" alt="MJ Erseys" /></a>
+    <a className="logo" href="#top" aria-label="MJ home" onClick={() => onNavigate?.('New-Arrival')} style={{ cursor: 'pointer' }}><img src="/logos/mjerseyss_logo.svg" alt="mjerseyss" /></a>
     <nav aria-label="Primary">
       {NAV_LINKS.map((label) => (
         <a key={label} onClick={() => onNavigate?.(label)} style={{ cursor: 'pointer' }}>{label.toUpperCase()}</a>
@@ -114,8 +114,9 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
     const lines = cartItems
       .map((i) => `• ${i.name} · ${i.size} · ×${i.qty} (${i.delivery === 'delivery' ? 'Delivery' : 'Pickup'})`)
       .join('\n');
+    const greeting = WHATSAPP_ORDER_TEXT.replace('{orderRef}', orderRef);
     const msg = [
-      `Hi MJ Erseys! I just placed order ${orderRef}.`,
+      greeting,
       `Name: ${name.trim()}`,
       `Phone: ${phone.trim()}`,
       'Items:',

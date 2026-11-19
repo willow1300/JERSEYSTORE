@@ -43,7 +43,7 @@ const Header: React.FC<Pick<JerseysProps, "cartCount" | "onNavigate" | "onCartCl
   setMenuOpen,
 }) => (
   <header className="topbar">
-    <a className="logo" href="#top" aria-label="MJ home" onClick={() => onNavigate?.('New-Arrival')} style={{ cursor: 'pointer' }}><img src="/logos/mjerseyss_logo.svg" alt="MJ Erseys" /></a>
+    <a className="logo" href="#top" aria-label="MJ home" onClick={() => onNavigate?.('New-Arrival')} style={{ cursor: 'pointer' }}><img src="/logos/mjerseyss_logo.svg" alt="mjerseyss" /></a>
 
     <nav aria-label="Primary">
       {NAV_LINKS.map((label) => (

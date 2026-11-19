@@ -223,7 +223,7 @@ export function useLandingMotion(active: boolean) {
       const pre = document.createElement('div')
       pre.className = 'lm-preloader'
       pre.innerHTML =
-        '<div class="lm-preloader-logo"><img src="/logos/mjerseyss_logo.svg" alt="MJ Erseys" /></div>' +
+        '<div class="lm-preloader-logo"><img src="/logos/mjerseyss_logo.svg" alt="mjerseyss" /></div>' +
         '<div class="lm-preloader-count">[ <b>000</b> ]</div>' +
         '<div class="lm-preloader-bar"></div>'
       document.body.appendChild(pre)

@@ -68,7 +68,7 @@ export default function SiteFooter({ onNavigate }: { onNavigate: (page: string) 
           </div>
           <div className="footer-bottom">
             <div className="footer-bottom-spacer" />
-            <p className="footer-copyright">© 2026 mjjerseys. All rights reserved.</p>
+            <p className="footer-copyright">© 2026 mjerseyss. All rights reserved.</p>
             <div className="footer-bottom-links">
               <a role="button">Privacy Policy</a>
               <a role="button">Terms &amp; Conditions</a>

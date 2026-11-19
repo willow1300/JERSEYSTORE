@@ -33,7 +33,7 @@ const Header: React.FC<Pick<ProductPageProps, "cartCount" | "onNavigate" | "menu
   onOpenAuth,
 }) => (
   <header className="topbar">
-    <a className="logo" href="#top" aria-label="MJ home" onClick={() => onNavigate?.('New-Arrival')} style={{ cursor: 'pointer' }}><img src="/logos/mjerseyss_logo.svg" alt="MJ Erseys" /></a>
+    <a className="logo" href="#top" aria-label="MJ home" onClick={() => onNavigate?.('New-Arrival')} style={{ cursor: 'pointer' }}><img src="/logos/mjerseyss_logo.svg" alt="mjerseyss" /></a>
     <nav aria-label="Primary">
       {NAV_LINKS.map((label) => (
         <a key={label} onClick={() => onNavigate?.(label)} style={{ cursor: 'pointer' }}>{label.toUpperCase()}</a>
