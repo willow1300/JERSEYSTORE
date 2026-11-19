@@ -517,9 +517,11 @@ a.footer-contact-item:hover { color: #09090b; }
   gap: 0;
   width: 52px;
   height: 52px;
+  border: 0;
   border-radius: 50%;
   background: #25d366;
   color: #fff;
+  cursor: pointer;
   text-decoration: none;
   overflow: hidden;
   box-shadow: 0 8px 22px rgba(37, 211, 102, .4);
@@ -537,6 +539,23 @@ a.footer-contact-item:hover { color: #09090b; }
 .wa-fab:hover { width: 158px; transform: translateY(-3px); box-shadow: 0 12px 28px rgba(37, 211, 102, .5); }
 .wa-fab:hover span { max-width: 110px; opacity: 1; margin-left: 8px; }
 .wa-fab svg { flex-shrink: 0; }
+
+/* floating chat box — custom message before opening WhatsApp */
+.wa-chat-input {
+  width: 100%;
+  min-height: 96px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border: 1px solid #000;
+  background: #fff;
+  color: #000;
+  font: 500 13px/1.5 var(--font-mj-sans);
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+.wa-chat-input:focus { box-shadow: 0 0 0 1px #000; }
+.wa-chat-input::placeholder { color: rgba(0,0,0,.4); }
 @media (max-width: 720px) {
   .wa-fab { right: 26px; bottom: 38px; }
 }
@@ -619,6 +638,7 @@ a.footer-contact-item:hover { color: #09090b; }
   border-radius: 999px;
 }
 .checkout-confirm:hover { background: #222; }
+.checkout-confirm:disabled { background: rgba(0,0,0,.25); cursor: not-allowed; }
 .checkout-continue {
   width: 100%;
   background: transparent;
