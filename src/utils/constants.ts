@@ -7,7 +7,6 @@ export const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIC
 const asExternalUrl = (u: string) => (u && !/^https?:\/\//i.test(u) ? `https://${u}` : u)
 export const TIKTOK_URL = asExternalUrl((import.meta as any).env?.VITE_TIKTOK_URL || '')
 export const INSTAGRAM_URL = asExternalUrl((import.meta as any).env?.VITE_INSTAGRAM_URL || '')
-export const CONTACT_EMAIL = (import.meta as any).env?.VITE_CONTACT_EMAIL || ''
 
 /* localStorage cache key for the persisted cart */
 export const CART_STORAGE_KEY = 'mj_cart'

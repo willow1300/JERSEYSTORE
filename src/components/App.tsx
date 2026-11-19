@@ -10,7 +10,7 @@ import SiteFooter from './SiteFooter'
 import type { Product } from '../data/types'
 import { useLandingMotion } from '../utils/landingMotion'
 import { WHATSAPP_LINK, CART_STORAGE_KEY, CART_EXPIRY_HOURS } from '../utils/constants'
-import { NEW_ARRIVALS, gangImages } from '../data/newArrivals'
+import { NEW_ARRIVALS } from '../data/newArrivals'
 import { fetchKits, getCachedKits, REMOTE_ENABLED, type Kit } from '../utils/kits'
 
 function Icon({ name, size = 17 }: { name: 'arrow' | 'bag' | 'menu' | 'profile' | 'search' | 'x' | 'heart'; size?: number }) {
@@ -47,7 +47,7 @@ function pickArrivals(kits: Kit[]): Kit[] {
   return flagged.length ? flagged : kits.slice(0, STATIC_ARRIVALS.length)
 }
 
-function ArrivalCard({ item, onOpen }: { item: Kit; onOpen: (p: Product) => void }) {
+function ArrivalCard({ item, onOpen, onQuickAdd }: { item: Kit; onOpen: (p: Product) => void; onQuickAdd: (k: Kit) => void }) {
   return (
     <article className={`na-card ${item.inStock ? '' : 'is-out'}`.trim()}>
       <div className="na-image" onClick={() => onOpen(toProduct(item))} role="button" tabIndex={0}>
@@ -55,10 +55,12 @@ function ArrivalCard({ item, onOpen }: { item: Kit; onOpen: (p: Product) => void
         {!item.inStock && <span className="na-stock">SOLD OUT</span>}
       </div>
       <h3 className="na-name">{item.name}</h3>
-      <p className="na-price">{`Ksh ${item.price.toLocaleString()}`}</p>
-      <button className="na-btn" onClick={() => onOpen(toProduct(item))} disabled={!item.inStock}>
-        {item.inStock ? 'SELECT OPTION' : 'NOT IN STOCK'}
-      </button>
+      <div className="na-price-row">
+        <p className="na-price">{`Ksh ${item.price.toLocaleString()}`}</p>
+        <button className="na-cart-btn" onClick={() => onQuickAdd(item)} disabled={!item.inStock} aria-label={`Add ${item.name} to cart`}>
+          <Icon name="bag" size={16} />
+        </button>
+      </div>
     </article>
   )
 }
@@ -78,7 +80,7 @@ function NaHintIco({ dir }: { dir: 'l' | 'r' }) {
 function LandingPage({
   menuOpen, setMenuOpen, cartCount, setCartCount,
   filterOpen, setFilterOpen, tone, setTone,
-  toast, setToast, setPage, onSelectProduct, onProfileClick, onWishlistClick, arrivals,
+  toast, setToast, setPage, onSelectProduct, onQuickAdd, onProfileClick, onWishlistClick, arrivals,
 }: {
   menuOpen: boolean; setMenuOpen: (v: boolean) => void
   cartCount: number; setCartCount: (v: number) => void
@@ -87,12 +89,11 @@ function LandingPage({
   toast: string; setToast: (v: string) => void
   setPage: (v: string) => void
   onSelectProduct: (p: Product) => void
+  onQuickAdd: (k: Kit) => void
   onProfileClick: () => void
   onWishlistClick: () => void
   arrivals: Kit[]
 }) {
-  const [featureIdx, setFeatureIdx] = useState(0);
-  const [featureFade, setFeatureFade] = useState(false);
   const naRef = useRef<HTMLDivElement>(null);
   const naRef2 = useRef<HTMLDivElement>(null);
   const scrollNa = (dir: -1 | 1, which: 1 | 2 = 1) => {
@@ -110,21 +111,6 @@ function LandingPage({
   const [naHint, setNaHint] = useState(true);
   const dismissHint = () => setNaHint(false);
   const arrowClick = (dir: -1 | 1, which: 1 | 2) => { scrollNa(dir, which); dismissHint(); };
-
-  useEffect(() => {
-    for (let i = 1; i <= 7; i++) {
-      const img = new Image();
-      img.src = `/images/campaignbg/feature${i}.jpg`;
-    }
-    const timer = setInterval(() => {
-      setFeatureFade(true);
-      setTimeout(() => {
-        setFeatureIdx((i) => (i + 1) % 7);
-        setFeatureFade(false);
-      }, 600);
-    }, 180000);
-    return () => clearInterval(timer);
-  }, []);
 
   return (
     <>
@@ -163,36 +149,9 @@ function LandingPage({
       />
 
       <main id="top">
-        <section className="campaign" id="drop">
-            <img className="campaign-bg" src="https://images.unsplash.com/photo-1606484527234-71e5b89ffcc6?auto=format&fit=crop&w=1600&q=90" alt="" />
-            <div className="blue-wash" />
-            <div className="season-code">[ SERIES 01 ]</div>
-            <div className="campaign-title">
-              <p>COLLECTION</p>
-              <div className="buy-lockup">
-                <button onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })} aria-label="Shop collection"><Icon name="arrow" size={26} /></button>
-                <span>ADD TO KIT</span>
-              </div>
-              <div className="hero-tags">[ ALL LEAGUES ]<br />[ AUTHENTIC + RETRO ]<br />[ DELIVERY ]</div>
-            </div>
-            <div className="hero-player-stage">
-              <img className="hero-player" src="/images/hero/NewHero.jpg" alt="Hero player" />
-            </div>
-            <div className="preview-stack">
-              {[gangImages[0], gangImages[1]].map((img, i) => (
-                <figure key={img}>
-                  <img src={`/images/legacy/${img}`} alt={`Gang ${img}`} />
-                  <figcaption>{String(i + 1).padStart(2, '0')}</figcaption>
-                </figure>
-              ))}
-            </div>
-            <div className="slide-count"><b>01</b><i /><span>07</span></div>
-            <div className="socials"><span>IG</span><span>TK</span><span>X</span></div>
-          </section>
-
           <section className="catalog" id="shop">
             <div className="catalog-head">
-              <div className="catalog-title-center"><span>[ 26/27 COLLECTION ]</span><h2>NEW ARRIVAL</h2></div>
+              <div className="catalog-title-center"><h2>TRENDING</h2></div>
             </div>
             <div className="na-carousel">
               {arrivals.length === 0 && (
@@ -208,14 +167,14 @@ function LandingPage({
                 )}
                 <button className="na-arrow na-arrow-left" onClick={() => arrowClick(-1, 1)} aria-label="Previous arrivals (top row)"><NaHintIco dir="l" /></button>
                 <div className="na-track" ref={naRef} onScroll={dismissHint}>
-                  {arrivals.slice(0, Math.ceil(arrivals.length / 2)).map((item) => <ArrivalCard key={item.id} item={item} onOpen={onSelectProduct} />)}
+                  {arrivals.slice(0, Math.ceil(arrivals.length / 2)).map((item) => <ArrivalCard key={item.id} item={item} onOpen={onSelectProduct} onQuickAdd={onQuickAdd} />)}
                 </div>
                 <button className="na-arrow na-arrow-right" onClick={() => arrowClick(1, 1)} aria-label="More arrivals (top row)"><NaHintIco dir="r" /></button>
               </div>
               <div className={`na-row${naHint ? ' na-rows-hinting' : ''}`} hidden={arrivals.length === 0}>
                 <button className="na-arrow na-arrow-left" onClick={() => arrowClick(-1, 2)} aria-label="Previous arrivals (bottom row)"><NaHintIco dir="l" /></button>
                 <div className="na-track" ref={naRef2} onScroll={dismissHint}>
-                  {arrivals.slice(Math.ceil(arrivals.length / 2)).map((item) => <ArrivalCard key={item.id} item={item} onOpen={onSelectProduct} />)}
+                  {arrivals.slice(Math.ceil(arrivals.length / 2)).map((item) => <ArrivalCard key={item.id} item={item} onOpen={onSelectProduct} onQuickAdd={onQuickAdd} />)}
                 </div>
                 <button className="na-arrow na-arrow-right" onClick={() => arrowClick(1, 2)} aria-label="More arrivals (bottom row)"><NaHintIco dir="r" /></button>
               </div>
@@ -244,7 +203,6 @@ export default function App() {
   const [tone, setTone] = useState('ALL')
   const [toast, setToast] = useState('')
   const [page, setPage] = useState('landing')
-  const [gangIndex, setGangIndex] = useState(0)
   const [pendingAdd, setPendingAdd] = useState<string | null>(null)
   const [pendingImage, setPendingImage] = useState<string>('')
   const [pendingPrice, setPendingPrice] = useState<number>(85)
@@ -378,14 +336,6 @@ export default function App() {
     window.history.pushState({ page }, '', '')
   }, [page])
 
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setGangIndex((prev) => (prev + 1) % gangImages.length)
-    }, 3000)
-    return () => clearInterval(timer)
-  }, [])
-
   const STORAGE_KEY = CART_STORAGE_KEY
   const EXPIRY_HOURS = CART_EXPIRY_HOURS
 
@@ -456,6 +406,7 @@ export default function App() {
             toast={toast} setToast={setToast}
             setPage={setPage}
             onSelectProduct={openProduct}
+            onQuickAdd={(kit) => requestAdd(kit.name, kit.image, kit.price)}
             arrivals={arrivals}
             onProfileClick={() => setAuthOpen(true)}
             onWishlistClick={() => {
@@ -582,40 +533,14 @@ export default function App() {
                 <h2 className="checkout-title">Quick Add</h2>
                 <p className="checkout-note" style={{ marginBottom: 16, opacity: 1, fontSize: 12 }}>{pendingAdd}</p>
 
-                {pendingImage && (
-                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
-                    <img src={pendingImage} alt={pendingAdd ?? ''} style={{ width: 120, height: 120, objectFit: 'contain', borderRadius: 8, background: '#111' }} />
-                  </div>
-                )}
-
-                <div className="qa-field">
-                  <label className="qa-label">Size</label>
-                  <div className="qa-options">
-                    {['XS','S','M','L','XL','XXL'].map((s) => (
-                      <button key={s} className={`qa-opt ${addSize === s ? 'qa-opt-active' : ''}`} onClick={() => setAddSize(s)}>{s}</button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="qa-field">
-                  <label className="qa-label">Quantity</label>
-                  <div className="qa-qty">
-                    <button className="qa-qty-btn" onClick={() => setAddQty((q) => Math.max(1, q - 1))}>−</button>
-                    <span className="qa-qty-val">{addQty}</span>
-                    <button className="qa-qty-btn" onClick={() => setAddQty((q) => q + 1)}>+</button>
-                  </div>
-                </div>
-
-                <div className="qa-field">
-                  <label className="qa-label">Fulfillment</label>
-                  <div className="qa-options">
-                    <button className={`qa-opt ${addDelivery === 'delivery' ? 'qa-opt-active' : ''}`} onClick={() => setAddDelivery('delivery')}>Delivery</button>
-                    <button className={`qa-opt ${addDelivery === 'pickup' ? 'qa-opt-active' : ''}`} onClick={() => setAddDelivery('pickup')}>Pick up at shop</button>
-                  </div>
+                <div className="qa-options" style={{ justifyContent: 'center', marginBottom: 16 }}>
+                  {['XS','S','M','L','XL','XXL'].map((s) => (
+                    <button key={s} className={`qa-opt ${addSize === s ? 'qa-opt-active' : ''}`} onClick={() => setAddSize(s)}>{s}</button>
+                  ))}
                 </div>
 
                 <button className="checkout-confirm" onClick={confirmAdd}>
-                  ADD TO CART — ${(pendingPrice * addQty).toFixed(2)}
+                  ADD TO CART — Ksh {(pendingPrice * addQty).toLocaleString()}
                 </button>
               </>
             )}
