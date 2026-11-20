@@ -63,7 +63,15 @@ export default function SiteFooter({ onNavigate }: { onNavigate: (page: string) 
             <ul className="footer-list">
               <li><a className="footer-link" href="#top">Our Story</a></li>
               <li><a className="footer-link" href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer">Contact Us</a></li>
-              <li><a className="footer-link" href="https://maps.google.com/?q=Hison%20Limited%20Biashara%20Street%20Nairobi" target="_blank" rel="noopener noreferrer">Store Locator</a></li>
+              <li>
+                <a className="footer-link footer-locator" href="https://maps.google.com/?q=Hison%20Limited%20Biashara%20Street%20Nairobi" target="_blank" rel="noopener noreferrer">
+                  <span className="footer-locator-pin" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
+                    <span className="footer-locator-ring" />
+                  </span>
+                  Store Locator
+                </a>
+              </li>
             </ul>
           </div>
           <div className="footer-bottom">

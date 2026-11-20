@@ -452,6 +452,33 @@ a.footer-contact-item:hover { color: #09090b; }
 .footer-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .footer-link { font: 400 14px/1.5 var(--font-mj-sans); color: #71717a; cursor: pointer; transition: color .15s; }
 .footer-link:hover { color: #09090b; }
+
+/* Store Locator: bobbing map pin + pulsing ground ring so the link reads as
+   clickable and opens the Google Maps location. */
+.footer-locator { display: inline-flex; align-items: center; gap: 7px; }
+.footer-locator-pin { position: relative; display: inline-flex; width: 16px; height: 16px; flex: none; }
+.footer-locator-pin svg { width: 16px; height: 16px; animation: locator-bob 1.6s ease-in-out infinite; }
+.footer-locator-ring {
+  position: absolute;
+  left: 50%;
+  bottom: -2px;
+  width: 7px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(9, 9, 11, .38);
+  transform: translateX(-50%);
+  animation: locator-pulse 1.6s ease-in-out infinite;
+}
+.footer-locator:hover .footer-locator-pin svg { animation-duration: .7s; }
+.footer-locator:hover .footer-locator-ring { background: rgba(9, 9, 11, .6); }
+@keyframes locator-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2.5px); }
+}
+@keyframes locator-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: .45; }
+  50% { transform: translateX(-50%) scale(1.9); opacity: .12; }
+}
 .footer-bottom { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr; row-gap: 12px; text-align: center; border-top: 1px solid #e4e4e7; margin-top: 20px; padding-top: 24px; }
 .footer-copyright { margin: 0; font: 400 12px var(--font-mj-sans); color: #71717a; white-space: nowrap; }
 .footer-bottom-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; font: 400 12px var(--font-mj-sans); color: #71717a; white-space: nowrap; }
