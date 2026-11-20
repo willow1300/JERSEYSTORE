@@ -1,19 +1,23 @@
-// Delivery areas, read from a second BaseRow table. Fees are NOT charged at
-// checkout anymore — after paying, shoppers are sent to WhatsApp to agree on
-// the delivery fee there. This table now only drives the area picker labels.
-// Create a table in the same database as the kits (one row per area):
+// Delivery Prices table, read from a second BaseRow table. The table prices
+// specific areas (currently the Nairobi neighborhoods); the checkout dropdown
+// offers those priced areas PLUS every Kenyan county, so delivery stays
+// country-wide even where no price exists yet.
 //
-//   Location / Area | Fee | Is Default
-//   Nairobi         | 200 | true
-//   Mombasa         | 450 | false
-//   Kisumu          | 400 | false
+//   Location | Price
+//   Westlands | 300
+//   Kileleshwa | 300
 //
-// Only a location and a fee are required. The `Is Default` column is optional —
-// without it the default comes from VITE_DELIVERY_FEE (or 200), and shoppers who
-// do not appear in the list are charged that default.
+// A separate County table holds flat per-county fees (near-Nairobi 250,
+// western/northern/coastal 350, ...) keyed by the county name:
 //
-// Column names are matched loosely through the same alias logic as the kits
-// table, so "Fee", "delivery_fee" and "Delivery Fee (Ksh)" all work.
+//   Name    | Price
+//   Kiambu  | 250
+//   Mombasa | 350
+//
+// A priced area or county is charged at checkout; anything without a price is
+// agreed on WhatsApp after the order is placed. Column names are matched
+// loosely through the same alias logic as the kits table, so "Fee",
+// "delivery_fee" and "Delivery Fee (Ksh)" all work.
 
 import {
   BASEROW_API_KEY,
@@ -36,16 +40,18 @@ const ENV = (import.meta as any).env || {}
 
 export const DELIVERY_TABLE_ID = String(ENV.VITE_DELIVERY_TABLE_ID || '')
 export const DELIVERY_ENABLED = Boolean(DELIVERY_TABLE_ID && BASEROW_ENABLED)
+export const COUNTY_PRICES_TABLE_ID = String(ENV.VITE_COUNTY_PRICES_TABLE_ID || '')
+export const COUNTY_PRICES_ENABLED = Boolean(COUNTY_PRICES_TABLE_ID && BASEROW_ENABLED)
 
 // A BaseRow token can be scoped to a single table. If the kits token 401s on the
 // delivery table, issue a second token for it (or a database-wide one) and put it
 // here; unset reuses the kits token.
 const DELIVERY_TOKEN = String(ENV.VITE_DELIVERY_TOKEN || '') || BASEROW_API_KEY
 
-/** Charged when nothing is flagged default and no area matches. */
+/** Charged when a table row has no price column. */
 export const FALLBACK_DELIVERY_FEE = (() => {
   const n = parseFloat(String(ENV.VITE_DELIVERY_FEE ?? '').replace(/[^0-9.-]/g, ''))
-  return Number.isFinite(n) && n > 0 ? n : 200
+  return Number.isFinite(n) && n > 0 ? n : 0
 })()
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -129,14 +135,46 @@ export async function fetchDeliveryZones(): Promise<DeliveryZone[]> {
     const skipped = rows.length - zones.length
     console.info(
       `[Delivery] ${zones.length}/${rows.length} areas loaded` +
-        (skipped ? ` · ${skipped} row(s) skipped for a missing location` : '') +
-        (zones.some((z) => z.isDefault) ? '' : ` · no row flagged default, using ${FALLBACK_DELIVERY_FEE}`),
+        (skipped ? ` · ${skipped} row(s) skipped for a missing location` : ''),
     )
     return zones
   })()
 
   zonePromise.catch(() => { zonePromise = null })
   return zonePromise
+}
+
+/* ---------- County flat fees ---------- */
+
+// Per-county fees (near-Nairobi 250, western/northern/coastal 350, ...) read
+// from the County table with the same token as the Delivery Prices table.
+// Keyed by the normalised county name so "Kiambu" and "Kiambu County" match.
+let countyCache: Map<string, number> | null = null
+let countyPromise: Promise<Map<string, number>> | null = null
+
+export function getCachedCountyPrices(): Map<string, number> | null {
+  return countyCache
+}
+
+export async function fetchCountyPrices(): Promise<Map<string, number>> {
+  if (countyCache) return countyCache
+  if (countyPromise) return countyPromise
+  if (!COUNTY_PRICES_ENABLED) return Promise.resolve(new Map())
+
+  countyPromise = (async () => {
+    const rows = await fetchTableRows(COUNTY_PRICES_TABLE_ID, DELIVERY_TOKEN)
+    const fees = new Map<string, number>()
+    for (const row of rows) {
+      const z = mapDeliveryRow(row)
+      if (z && z.fee > 0) fees.set(norm(z.location), z.fee)
+    }
+    countyCache = fees
+    console.info(`[Delivery] ${fees.size}/${rows.length} county prices loaded`)
+    return fees
+  })()
+
+  countyPromise.catch(() => { countyPromise = null })
+  return countyPromise
 }
 
 /**
@@ -164,4 +202,69 @@ export function deliveryLabel(zones: DeliveryZone[], zoneId: string): string {
   if (match) return match.location
   const d = defaultZone(zones)
   return d ? d.location : 'DEFAULT AREA'
+}
+
+/* ---------- Counties + picker options ---------- */
+
+// Every Kenyan county. Priced areas from the table are offered alongside these
+// so delivery is country-wide even before every county has a price.
+export const KENYA_COUNTIES = [
+  'Baringo', 'Bomet', 'Bungoma', 'Busia', 'Elgeyo-Marakwet', 'Embu', 'Garissa',
+  'Homa Bay', 'Isiolo', 'Kajiado', 'Kakamega', 'Kericho', 'Kiambu', 'Kilifi',
+  'Kirinyaga', 'Kisii', 'Kisumu', 'Kitui', 'Kwale', 'Laikipia', 'Lamu', 'Machakos',
+  'Makueni', 'Mandera', 'Marsabit', 'Meru', 'Migori', 'Mombasa', "Murang'a",
+  'Nairobi', 'Nakuru', 'Nandi', 'Narok', 'Nyamira', 'Nyandarua', 'Nyeri',
+  'Samburu', 'Siaya', 'Taita-Taveta', 'Tana River', 'Tharaka-Nithi', 'Trans-Nzoia',
+  'Turkana', 'Uasin Gishu', 'Vihiga', 'Wajir', 'West Pokot',
+]
+
+export interface DeliveryOption {
+  id: string
+  label: string
+  /** Null for counties that have no price in the table yet. */
+  fee: number | null
+  kind: 'county' | 'zone'
+}
+
+/**
+ * Picker options: every Kenyan county followed by the priced table areas.
+ * Counties carry a flat fee from the County table (250 / 350); choosing one
+ * whose name appears in the Delivery Prices table opens a second picker for
+ * its priced areas, which are more specific than the flat fee.
+ */
+export function deliveryOptions(zones: DeliveryZone[], countyFees?: Map<string, number>): DeliveryOption[] {
+  const fees = countyFees ?? new Map<string, number>()
+  const feeFor = (county: string): number | null => {
+    const c = norm(county)
+    const exact = fees.get(c)
+    if (exact != null) return exact
+    // Lenient fallback so "Kiambu County" still matches "Kiambu".
+    for (const [k, v] of fees) {
+      if (k.includes(c) || c.includes(k)) return v
+    }
+    return null
+  }
+
+  const counties: DeliveryOption[] = KENYA_COUNTIES.map((c) => ({
+    id: `county-${norm(c)}`,
+    label: c,
+    // Priced areas beat a flat county fee.
+    fee: countyHasAreas(zones, c) ? null : feeFor(c),
+    kind: 'county',
+  }))
+
+  const areas: DeliveryOption[] = zones.map((z) => ({
+    id: z.id,
+    label: z.location,
+    fee: z.fee,
+    kind: 'zone',
+  }))
+
+  return [...counties, ...areas]
+}
+
+/** True when the table has priced rows for a county (matched by name). */
+export function countyHasAreas(zones: DeliveryZone[], county: string): boolean {
+  const c = norm(county)
+  return zones.some((z) => norm(z.location).includes(c))
 }

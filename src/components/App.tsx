@@ -41,12 +41,6 @@ function toProduct(a: Kit): Product {
 const STATIC_ARRIVALS: Kit[] = NEW_ARRIVALS.map((a) => ({ ...a, sizes: [], gallery: [a.image], inStock: true, isNew: true, retro: false }))
 const SEED_ARRIVALS: Kit[] = REMOTE_ENABLED ? [] : STATIC_ARRIVALS
 
-// Kits flagged "new" in BaseRow; fall back to the first rows when no flag is set.
-function pickArrivals(kits: Kit[]): Kit[] {
-  const flagged = kits.filter((k) => k.isNew)
-  return flagged.length ? flagged : kits.slice(0, STATIC_ARRIVALS.length)
-}
-
 function ArrivalCard({ item, onOpen, onQuickAdd }: { item: Kit; onOpen: (p: Product) => void; onQuickAdd: (k: Kit) => void }) {
   return (
     <article className={`na-card ${item.inStock ? '' : 'is-out'}`.trim()}>
@@ -80,7 +74,7 @@ function NaHintIco({ dir }: { dir: 'l' | 'r' }) {
 function LandingPage({
   menuOpen, setMenuOpen, cartCount, setCartCount,
   filterOpen, setFilterOpen, tone, setTone,
-  toast, setToast, setPage, onSelectProduct, onQuickAdd, onProfileClick, onWishlistClick, arrivals,
+  toast, setToast, setPage, onSelectProduct, onQuickAdd, onProfileClick, onWishlistClick, kits,
 }: {
   menuOpen: boolean; setMenuOpen: (v: boolean) => void
   cartCount: number; setCartCount: (v: number) => void
@@ -92,7 +86,7 @@ function LandingPage({
   onQuickAdd: (k: Kit) => void
   onProfileClick: () => void
   onWishlistClick: () => void
-  arrivals: Kit[]
+  kits: Kit[]
 }) {
   const naRef = useRef<HTMLDivElement>(null);
   const naRef2 = useRef<HTMLDivElement>(null);
@@ -150,14 +144,11 @@ function LandingPage({
 
       <main id="top">
           <section className="catalog" id="shop">
-            <div className="catalog-head">
-              <div className="catalog-title-center"><h2>TRENDING</h2></div>
-            </div>
             <div className="na-carousel">
-              {arrivals.length === 0 && (
-                <div className="ak-empty">[ LOADING LATEST KITS… ]</div>
+              {kits.length === 0 && (
+                <div className="ak-empty">[ LOADING KITS… ]</div>
               )}
-              <div className={`na-row${naHint ? ' na-rows-hinting' : ''}`} hidden={arrivals.length === 0}>
+              <div className={`na-row${naHint ? ' na-rows-hinting' : ''}`} hidden={kits.length === 0}>
                 {naHint && (
                   <div className="na-swipe-hint" aria-hidden="true">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 5l-7 7 7 7" /></svg>
@@ -167,14 +158,14 @@ function LandingPage({
                 )}
                 <button className="na-arrow na-arrow-left" onClick={() => arrowClick(-1, 1)} aria-label="Previous arrivals (top row)"><NaHintIco dir="l" /></button>
                 <div className="na-track" ref={naRef} onScroll={dismissHint}>
-                  {arrivals.slice(0, Math.ceil(arrivals.length / 2)).map((item) => <ArrivalCard key={item.id} item={item} onOpen={onSelectProduct} onQuickAdd={onQuickAdd} />)}
+                  {kits.slice(0, Math.ceil(kits.length / 2)).map((item) => <ArrivalCard key={item.id} item={item} onOpen={onSelectProduct} onQuickAdd={onQuickAdd} />)}
                 </div>
                 <button className="na-arrow na-arrow-right" onClick={() => arrowClick(1, 1)} aria-label="More arrivals (top row)"><NaHintIco dir="r" /></button>
               </div>
-              <div className={`na-row${naHint ? ' na-rows-hinting' : ''}`} hidden={arrivals.length === 0}>
+              <div className={`na-row${naHint ? ' na-rows-hinting' : ''}`} hidden={kits.length === 0}>
                 <button className="na-arrow na-arrow-left" onClick={() => arrowClick(-1, 2)} aria-label="Previous arrivals (bottom row)"><NaHintIco dir="l" /></button>
                 <div className="na-track" ref={naRef2} onScroll={dismissHint}>
-                  {arrivals.slice(Math.ceil(arrivals.length / 2)).map((item) => <ArrivalCard key={item.id} item={item} onOpen={onSelectProduct} onQuickAdd={onQuickAdd} />)}
+                  {kits.slice(Math.ceil(kits.length / 2)).map((item) => <ArrivalCard key={item.id} item={item} onOpen={onSelectProduct} onQuickAdd={onQuickAdd} />)}
                 </div>
                 <button className="na-arrow na-arrow-right" onClick={() => arrowClick(1, 2)} aria-label="More arrivals (bottom row)"><NaHintIco dir="r" /></button>
               </div>
@@ -216,7 +207,7 @@ export default function App() {
   const [userEmail, setUserEmail] = useState<string | null>(null)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [catalog, setCatalog] = useState<Product[]>(() => SEED_ARRIVALS.map(toProduct))
-  const [arrivals, setArrivals] = useState<Kit[]>(() => getCachedKits() ? pickArrivals(getCachedKits()!) : SEED_ARRIVALS)
+  const [kits, setKits] = useState<Kit[]>(() => getCachedKits() || SEED_ARRIVALS)
 
   // Account + wishlist (wishlist only exists while signed in; cleared on logout)
   const [account, setAccount] = useState<string | null>(() => localStorage.getItem('mj_account'))
@@ -230,12 +221,12 @@ export default function App() {
   const [waChatOpen, setWaChatOpen] = useState(false)
   const [waText, setWaText] = useState('')
 
-  // Load the BaseRow table (Cloudinary fallback) and feed NEW ARRIVAL + related products.
+  // Load the BaseRow table (Cloudinary fallback) and feed the catalog + related products.
   useEffect(() => {
     const cached = getCachedKits()
     if (cached?.length) {
       setCatalog(cached.map(toProduct))
-      setArrivals(pickArrivals(cached))
+      setKits(cached)
       return
     }
     if (!REMOTE_ENABLED) return
@@ -244,7 +235,7 @@ export default function App() {
       .then((res) => {
         if (cancelled || !res?.length) return
         setCatalog(res.map(toProduct))
-        setArrivals(pickArrivals(res))
+        setKits(res)
       })
       .catch(() => {})
     return () => { cancelled = true }
@@ -411,7 +402,7 @@ export default function App() {
             setPage={setPage}
             onSelectProduct={openProduct}
             onQuickAdd={(kit) => requestAdd(kit.name, kit.image, kit.price)}
-            arrivals={arrivals}
+            kits={kits}
             onProfileClick={() => setAuthOpen(true)}
             onWishlistClick={() => {
               if (!account) { setAuthOpen(true); flash('SIGN IN TO KEEP YOUR WISHLIST') }

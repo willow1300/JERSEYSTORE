@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import {
   DELIVERY_ENABLED,
-  deliveryLabel,
-  defaultZone,
+  countyHasAreas,
+  deliveryOptions,
+  fetchCountyPrices,
   fetchDeliveryZones,
+  getCachedCountyPrices,
   getCachedDeliveryZones,
   type DeliveryZone,
 } from "../utils/delivery";
@@ -81,32 +83,49 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const [chatUrl, setChatUrl] = useState('');
   const [orderSaved, setOrderSaved] = useState<boolean | null>(null);
 
-  // Areas come from BaseRow. The delivery fee itself is never charged at
-  // checkout — it is agreed on WhatsApp after the order is placed.
+  // Priced areas come from BaseRow; every Kenyan county is offered alongside
+  // them. Priced areas are charged at checkout, counties without a price go to
+  // WhatsApp after the order is placed to agree the fee.
   const [zones, setZones] = useState<DeliveryZone[]>(() => getCachedDeliveryZones() ?? []);
+  const [countyFees, setCountyFees] = useState<Map<string, number>>(() => getCachedCountyPrices() ?? new Map());
+  const [countyId, setCountyId] = useState('');
   const [zoneId, setZoneId] = useState('');
 
   useEffect(() => {
-    if (!DELIVERY_ENABLED || zones.length) return;
     let alive = true;
-    fetchDeliveryZones()
-      .then((z) => { if (alive) setZones(z); })
-      .catch((e) => console.warn('[Checkout] delivery areas unavailable:', e));
+    if (DELIVERY_ENABLED && !zones.length) {
+      fetchDeliveryZones()
+        .then((z) => { if (alive) setZones(z); })
+        .catch((e) => console.warn('[Checkout] delivery areas unavailable:', e));
+    }
+    fetchCountyPrices()
+      .then((f) => { if (alive) setCountyFees(f); })
+      .catch((e) => console.warn('[Checkout] county prices unavailable:', e));
     return () => { alive = false; };
   }, []);
 
   const linesTotal = cartItems.reduce((s, i) => s + (i.price ?? 0) * i.qty, 0);
   const hasDelivery = cartItems.some((i) => i.delivery === 'delivery');
-  // Kits only — the delivery fee is agreed on WhatsApp after checkout.
-  const total = linesTotal;
 
-  const areaZone = defaultZone(zones);
-  // The default option shows the flagged row's name when there is one.
-  const defaultLabel = areaZone ? areaZone.location : 'DEFAULT AREA';
-  // Only the one row acting as default is folded into the default option; if two
-  // rows are flagged the rest still stay selectable.
-  const listedZones = zones.filter((z) => z.id !== (areaZone?.id ?? ''));
-  const areaLabel = hasDelivery ? deliveryLabel(zones, zoneId) : 'PICK AT SHOP';
+  // Counties are always listed; choosing one that the table prices (Nairobi)
+  // opens a second picker for the specific area, whose fee is charged at
+  // checkout. Other counties carry a flat fee from the County table
+  // (near-Nairobi 250, western/northern/coastal 350); without either, the fee
+  // is agreed on WhatsApp after the order.
+  const countyOptions = deliveryOptions(zones, countyFees).filter((o) => o.kind === 'county');
+  const chosenCounty = countyOptions.find((o) => o.id === countyId) ?? null;
+  const countyLabel = chosenCounty?.label ?? '';
+  const hasAreas = Boolean(chosenCounty && countyHasAreas(zones, chosenCounty.label));
+  const chosenArea = hasAreas ? (zones.find((z) => z.id === zoneId) ?? null) : null;
+  // Fee sources, most specific first: a priced area (Nairobi), then a flat
+  // county price, otherwise null and the fee is agreed on WhatsApp.
+  const deliveryFee = chosenArea?.fee ?? chosenCounty?.fee ?? null;
+  const areaLabel = hasDelivery
+    ? (hasAreas && chosenArea ? `${countyLabel} · ${chosenArea.location}` : countyLabel || 'PICK AT SHOP')
+    : 'PICK AT SHOP';
+  const deliveryPriced = hasDelivery && deliveryFee != null;
+  // The delivery fee is charged at checkout only when the picked area/county has a price.
+  const total = linesTotal + (deliveryPriced ? (deliveryFee ?? 0) : 0);
 
   // WhatsApp message carrying the order details so the delivery fee can be
   // agreed in chat instead of being charged at checkout.
@@ -130,10 +149,16 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const confirm = () => {
     if (!name.trim()) { setError('ENTER YOUR NAME'); return; }
     if (phone.trim().length < 9) { setError('ENTER A VALID PHONE FOR M-PESA'); return; }
+    if (hasDelivery && !chosenCounty) { setError('SELECT YOUR DELIVERY COUNTY'); return; }
+    if (hasDelivery && hasAreas && !chosenArea) { setError(`SELECT YOUR AREA IN ${countyLabel.toUpperCase()}`); return; }
     setError('');
     setPaidTotal(total);
-    setPlacedArea(hasDelivery ? `${areaLabel} · FEE AGREED ON CHAT` : 'PICK AT SHOP · FREE');
-    if (hasDelivery) {
+    setPlacedArea(hasDelivery
+      ? (deliveryPriced ? `${areaLabel} · ${formatPrice(deliveryFee ?? 0)} INCLUDED` : `${areaLabel} · FEE AGREED ON CHAT`)
+      : 'PICK AT SHOP · FREE');
+    // Areas without a price go straight to WhatsApp so the fee is agreed there;
+    // priced areas are charged at checkout and need no chat.
+    if (hasDelivery && !deliveryPriced) {
       const url = deliveryChatUrl();
       setChatUrl(url);
       // Straight to chat after paying so the delivery fee is agreed there.
@@ -208,7 +233,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
             {orderSaved && (
               <p className="ck-account">ORDER SAVED TO OUR RECORDS ✓ — WE'LL CONFIRM VIA WHATSAPP</p>
             )}
-            {hasDelivery && (
+            {hasDelivery && !deliveryPriced && (
               <a className="ck-confirm" href={chatUrl} target="_blank" rel="noopener noreferrer">
                 AGREE DELIVERY FEE ON WHATSAPP
               </a>
@@ -232,21 +257,40 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
                 <input className="ck-input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="07XX XXX XXX" inputMode="tel" />
               </div>
 
-              {hasDelivery && listedZones.length > 0 && (
-                <div className="ck-field">
-                  <label className="pp-label" htmlFor="ck-area">DELIVERY AREA</label>
-                  <select
-                    id="ck-area"
-                    className="ck-input ck-select"
-                    value={zoneId}
-                    onChange={(e) => setZoneId(e.target.value)}
-                  >
-                    <option value="">{defaultLabel}</option>
-                    {listedZones.map((z) => (
-                      <option key={z.id} value={z.id}>{z.location}</option>
-                    ))}
-                  </select>
-                </div>
+              {hasDelivery && (
+                <>
+                  <div className="ck-field">
+                    <label className="pp-label" htmlFor="ck-area">DELIVERY COUNTY</label>
+                    <select
+                      id="ck-area"
+                      className="ck-input ck-select"
+                      value={countyId}
+                      onChange={(e) => { setCountyId(e.target.value); setZoneId(''); }}
+                    >
+                      <option value="">[ SELECT YOUR COUNTY ]</option>
+                      {countyOptions.map((o) => (
+                        <option key={o.id} value={o.id}>{o.label}{o.fee != null ? ` — ${formatPrice(o.fee)}` : ''}</option>
+                      ))}
+                    </select>
+                    <p className="ck-hint">PRICED COUNTIES ARE CHARGED AT CHECKOUT · OTHERS ARE AGREED ON WHATSAPP</p>
+                  </div>
+                  {hasAreas && (
+                    <div className="ck-field">
+                      <label className="pp-label" htmlFor="ck-zone">SPECIFIC AREA IN {countyLabel.toUpperCase()}</label>
+                      <select
+                        id="ck-zone"
+                        className="ck-input ck-select"
+                        value={zoneId}
+                        onChange={(e) => setZoneId(e.target.value)}
+                      >
+                        <option value="">[ SELECT YOUR AREA ]</option>
+                        {zones.map((z) => (
+                          <option key={z.id} value={z.id}>{z.location} — {formatPrice(z.fee)}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </>
               )}
 
               {hasDelivery && (
@@ -298,7 +342,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
               ))}
               <div className="ck-totals">
                 <div className="ck-total-row"><span>SUBTOTAL</span><b>{formatPrice(linesTotal)}</b></div>
-                <div className="ck-total-row"><span>DELIVERY{hasDelivery && zones.length ? ` · ${areaLabel}` : ''}</span><b>{hasDelivery ? 'AGREE ON CHAT' : 'FREE'}</b></div>
+                <div className="ck-total-row"><span>DELIVERY{hasDelivery && countyLabel ? ` · ${countyLabel}${hasAreas && chosenArea ? ` · ${chosenArea.location}` : ''}${deliveryPriced ? ` · ${formatPrice(deliveryFee ?? 0)}` : ''}` : ''}</span><b>{hasDelivery ? (deliveryPriced ? formatPrice(deliveryFee ?? 0) : 'AGREE ON CHAT') : 'FREE'}</b></div>
                 <div className="ck-total-row ck-grand"><span>TOTAL</span><b>{formatPrice(total)}</b></div>
               </div>
             </aside>

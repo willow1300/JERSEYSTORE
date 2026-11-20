@@ -351,6 +351,7 @@ a { color: inherit; text-decoration: none; }
    so it survives the reset. */
 .ck-select { appearance: none; -webkit-appearance: none; padding-right: 40px; cursor: pointer; background-image: linear-gradient(45deg, transparent 50%, #000 50%), linear-gradient(135deg, #000 50%, transparent 50%); background-position: calc(100% - 20px) calc(50% + 1px), calc(100% - 14px) calc(50% + 1px); background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; }
 .ck-select option { font: 500 13px var(--font-mj-sans); color: #000; background: #fff; }
+.ck-hint { margin: 8px 0 0; font: 500 10px 'DM Mono', ui-monospace, monospace; letter-spacing: .08em; color: rgba(0,0,0,.55); text-transform: uppercase; }
 .ck-fulfill-list { display: flex; flex-direction: column; gap: 8px; margin: 6px 0 18px; }
 .ck-fulfill-row { display: flex; justify-content: space-between; gap: 14px; font: 500 11px var(--font-mj-sans); letter-spacing: .04em; text-transform: uppercase; color: #000; border: 1px solid rgba(0,0,0,.18); padding: 9px 12px; }
 .ck-fulfill-row b { color: #000; }
