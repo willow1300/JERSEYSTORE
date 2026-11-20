@@ -220,19 +220,29 @@ export function useLandingMotion(active: boolean) {
     }
 
     if (showPreloader) {
+      // Built with DOM APIs instead of innerHTML so the preloader markup can
+      // never become an injection sink.
       const pre = document.createElement('div')
       pre.className = 'lm-preloader'
-      pre.innerHTML =
-        '<div class="lm-preloader-logo"><img src="/logos/mjerseyss_logo.svg" alt="mjerseyss" /></div>' +
-        '<div class="lm-preloader-count">[ <b>000</b> ]</div>' +
-        '<div class="lm-preloader-bar"></div>'
+      const logoWrap = document.createElement('div')
+      logoWrap.className = 'lm-preloader-logo'
+      const logoImg = document.createElement('img')
+      logoImg.src = '/logos/mjerseyss_logo.svg'
+      logoImg.alt = 'mjerseyss'
+      logoWrap.appendChild(logoImg)
+      const countEl = document.createElement('div')
+      countEl.className = 'lm-preloader-count'
+      countEl.append('[ ')
+      const countNum = document.createElement('b')
+      countNum.textContent = '000'
+      countEl.append(countNum, ' ]')
+      const bar = document.createElement('div')
+      bar.className = 'lm-preloader-bar'
+      pre.append(logoWrap, countEl, bar)
       document.body.appendChild(pre)
       preloaderEl = pre
 
-      const logo = pre.querySelector('.lm-preloader-logo') as HTMLElement
-      const count = pre.querySelector('.lm-preloader-count') as HTMLElement
-      const countNum = pre.querySelector('b') as HTMLElement
-      const bar = pre.querySelector('.lm-preloader-bar') as HTMLElement
+      const logo = logoWrap
       const counter = { v: 0 }
       const render = () => {
         countNum.textContent = String(Math.round(counter.v)).padStart(3, '0')

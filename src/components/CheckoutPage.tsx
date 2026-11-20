@@ -11,6 +11,7 @@ import {
 } from "../utils/delivery";
 import { WHATSAPP_NUMBER, WHATSAPP_ORDER_TEXT } from "../utils/constants";
 import { ORDERS_ENABLED, submitOrder } from "../utils/orders";
+import { INTASEND_ENABLED, startIntaSendCheckout } from "../utils/payments";
 import MobileNav, { BottomNav } from "./MobileNav";
 
 /* ---------- Types ---------- */
@@ -82,6 +83,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
   const [placedArea, setPlacedArea] = useState('');
   const [chatUrl, setChatUrl] = useState('');
   const [orderSaved, setOrderSaved] = useState<boolean | null>(null);
+  const [paying, setPaying] = useState(false);
 
   // Priced areas come from BaseRow; every Kenyan county is offered alongside
   // them. Priced areas are charged at checkout, counties without a price go to
@@ -146,12 +148,42 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
   };
 
-  const confirm = () => {
+  const confirm = async () => {
     if (!name.trim()) { setError('ENTER YOUR NAME'); return; }
     if (phone.trim().length < 9) { setError('ENTER A VALID PHONE FOR M-PESA'); return; }
     if (hasDelivery && !chosenCounty) { setError('SELECT YOUR DELIVERY COUNTY'); return; }
     if (hasDelivery && hasAreas && !chosenArea) { setError(`SELECT YOUR AREA IN ${countyLabel.toUpperCase()}`); return; }
     setError('');
+
+    const itemsText = cartItems
+      .map((i) => `${i.name} · ${i.size} · ×${i.qty} · ${i.delivery === 'delivery' ? 'Delivery' : 'Pickup'}`)
+      .join('\n');
+
+    // IntaSend route (when enabled): the checkout function validates the order,
+    // saves it to BaseRow and returns the hosted payment URL. The webhook marks
+    // the order paid once the money lands.
+    if (INTASEND_ENABLED && !paying) {
+      setPaying(true);
+      try {
+        const url = await startIntaSendCheckout({
+          name: name.trim(),
+          phone: phone.trim(),
+          items: itemsText,
+          amount: total,
+          fulfillment: hasDelivery ? 'Delivery' : 'Pickup',
+          area: hasDelivery ? areaLabel : 'Pick at shop',
+          note: note.trim(),
+          account: account || '',
+        });
+        window.location.assign(url);
+        return;
+      } catch (e) {
+        setPaying(false);
+        setError(e instanceof Error ? e.message : 'PAYMENT UNAVAILABLE — TRY AGAIN');
+        return;
+      }
+    }
+
     setPaidTotal(total);
     setPlacedArea(hasDelivery
       ? (deliveryPriced ? `${areaLabel} · ${formatPrice(deliveryFee ?? 0)} INCLUDED` : `${areaLabel} · FEE AGREED ON CHAT`)
@@ -170,9 +202,7 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
         orderRef,
         name: name.trim(),
         phone: phone.trim(),
-        items: cartItems
-          .map((i) => `${i.name} · ${i.size} · ×${i.qty} · ${i.delivery === 'delivery' ? 'Delivery' : 'Pickup'}`)
-          .join('\n'),
+        items: itemsText,
         amount: total,
         fulfillment: hasDelivery ? 'Delivery' : 'Pickup',
         area: hasDelivery ? areaLabel : 'Pick at shop',
@@ -322,8 +352,8 @@ const CheckoutPage: React.FC<CheckoutPageProps> = ({
 
               {error && <p className="ck-error">{error}</p>}
 
-              <button className="ck-confirm" onClick={confirm}>
-                CONFIRM ORDER — {formatPrice(total)}
+              <button className="ck-confirm" onClick={confirm} disabled={paying}>
+                {paying ? 'OPENING PAYMENT…' : INTASEND_ENABLED ? 'PAY NOW' : 'CONFIRM ORDER'} — {formatPrice(total)}
               </button>
               <button className="ck-edit" onClick={() => onNavigate?.('cart')}>← EDIT CART</button>
             </div>

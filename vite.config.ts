@@ -26,6 +26,14 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       port: parseInt(process.env.PORT || '8443'),
       strictPort: true,
+      proxy: {
+        // Local stand-in for the Netlify functions runtime: scripts/dev-payments.mjs
+        // serves the same IntaSend handlers so payments can be tested pre-deploy.
+        '/.netlify/functions': {
+          target: 'http://localhost:8899',
+          changeOrigin: true,
+        },
+      },
     },
     preview: {
       host: '0.0.0.0',

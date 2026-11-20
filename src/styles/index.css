@@ -667,6 +667,7 @@ a.footer-contact-item:hover { color: #09090b; }
 }
 .checkout-confirm:hover { background: #222; }
 .checkout-confirm:disabled { background: rgba(0,0,0,.25); cursor: not-allowed; }
+.ck-confirm:disabled { opacity: .6; cursor: wait; }
 .checkout-continue {
   width: 100%;
   background: transparent;
