@@ -13,7 +13,7 @@ export interface RetroProps {
   onSelectKit?: (kit: Kit) => void;
   onCartClick?: () => void;
   onProfileClick?: () => void;
-  onAdd?: (name: string, image?: string, price?: number) => void;
+  onAdd?: (name: string, image?: string, price?: number, sizes?: string[]) => void
   menuOpen?: boolean;
   setMenuOpen?: (v: boolean) => void;
 }
@@ -55,9 +55,9 @@ const Header: React.FC<Pick<RetroProps, "cartCount" | "onNavigate" | "onCartClic
   </header>
 );
 
-const RetroCard: React.FC<{ kit: Kit; idx?: number; onSelect?: (kit: Kit) => void; onAdd?: (name: string, image?: string, price?: number) => void }> = ({ kit, idx = 0, onSelect, onAdd }) => {
+const RetroCard: React.FC<{ kit: Kit; idx?: number; onSelect?: (kit: Kit) => void; onAdd?: (name: string, image?: string, price?: number, sizes?: string[]) => void }> = ({ kit, idx = 0, onSelect, onAdd }) => {
   const quickAdd = () => {
-    if (onAdd) onAdd(kit.name, kit.image, kit.price);
+    if (onAdd) onAdd(kit.name, kit.image, kit.price, kit.sizes);
     else onSelect?.(kit);
   };
   return (

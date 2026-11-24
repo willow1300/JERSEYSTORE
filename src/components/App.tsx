@@ -41,6 +41,16 @@ function toProduct(a: Kit): Product {
 const STATIC_ARRIVALS: Kit[] = NEW_ARRIVALS.map((a) => ({ ...a, sizes: [], gallery: [a.image], inStock: true, isNew: true, retro: false }))
 const SEED_ARRIVALS: Kit[] = REMOTE_ENABLED ? [] : STATIC_ARRIVALS
 
+// Canonical display order for the Quick Add size picker; kits carry their own
+// available sizes from BaseRow, and unknown labels sort last.
+const SIZE_ORDER = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+const sortSizes = (list: string[]) =>
+  [...list].sort((a, b) => {
+    const ia = SIZE_ORDER.indexOf(a)
+    const ib = SIZE_ORDER.indexOf(b)
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib)
+  })
+
 function ArrivalCard({ item, onOpen, onQuickAdd }: { item: Kit; onOpen: (p: Product) => void; onQuickAdd: (k: Kit) => void }) {
   return (
     <article className={`na-card ${item.inStock ? '' : 'is-out'}`.trim()}>
@@ -197,6 +207,7 @@ export default function App() {
   const [pendingAdd, setPendingAdd] = useState<string | null>(null)
   const [pendingImage, setPendingImage] = useState<string>('')
   const [pendingPrice, setPendingPrice] = useState<number>(85)
+  const [pendingSizes, setPendingSizes] = useState<string[]>([])
   const [addSize, setAddSize] = useState('M')
   const [addQty, setAddQty] = useState(1)
   const [addDelivery, setAddDelivery] = useState<'delivery' | 'pickup'>('delivery')
@@ -368,11 +379,13 @@ export default function App() {
     setCartCount(cartItems.reduce((sum, i) => sum + i.qty, 0))
   }, [cartItems])
 
-  const requestAdd = (name: string, image?: string, price?: number) => {
+  const requestAdd = (name: string, image?: string, price?: number, sizes?: string[]) => {
+    const available = sizes && sizes.length ? sortSizes(sizes) : []
     setPendingAdd(name)
     setPendingImage(image || '')
     setPendingPrice(price ?? 85)
-    setAddSize('M')
+    setPendingSizes(available)
+    setAddSize(available.length ? (available.includes('M') ? 'M' : available[0]) : 'M')
     setAddQty(1)
     setAddDelivery('delivery')
   }
@@ -401,7 +414,7 @@ export default function App() {
             toast={toast} setToast={setToast}
             setPage={setPage}
             onSelectProduct={openProduct}
-            onQuickAdd={(kit) => requestAdd(kit.name, kit.image, kit.price)}
+            onQuickAdd={(kit) => requestAdd(kit.name, kit.image, kit.price, kit.sizes)}
             kits={kits}
             onProfileClick={() => setAuthOpen(true)}
             onWishlistClick={() => {
@@ -533,7 +546,7 @@ export default function App() {
                 <p className="checkout-note" style={{ marginBottom: 16, opacity: 1, fontSize: 12 }}>{pendingAdd}</p>
 
                 <div className="qa-options" style={{ justifyContent: 'center', marginBottom: 16 }}>
-                  {['XS','S','M','L','XL','XXL'].map((s) => (
+                  {(pendingSizes.length ? pendingSizes : SIZE_ORDER).map((s) => (
                     <button key={s} className={`qa-opt ${addSize === s ? 'qa-opt-active' : ''}`} onClick={() => setAddSize(s)}>{s}</button>
                   ))}
                 </div>
